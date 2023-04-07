@@ -16,13 +16,12 @@ type readmethod func(*http.Request) (models.Message, error)
 type dbcaller func(models.Message) (dbresult, error)
 type calldbmethod func(*sql.DB) dbcaller
 type respondmethod func(http.ResponseWriter, dbresult)
-type httpreciever func(http.ResponseWriter, *http.Request)
 
 func factorapihandler(
 	read readmethod,
 	call calldbmethod,
 	respond respondmethod,
-) httpreciever {
+) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if rec := recover(); rec != nil {
