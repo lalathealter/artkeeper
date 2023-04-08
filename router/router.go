@@ -12,8 +12,8 @@ func Use() *router {
 	rt.setroute("/", "GET", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello world!"))
 	})
-	rt.setroute("/api/urls", "POST", controllers.Posturlhandler)
-
+	rt.setroute("/api/urls", "POST", controllers.PostURLhandler)
+	rt.setroute("/api/urls", "GET", controllers.GetOneURLHandler)
 	return rt
 }
 

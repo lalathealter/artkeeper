@@ -12,9 +12,7 @@ import (
 )
 
 func main() {
-	controllers.Initdb()
-
+	controllers.InitDB()
 	fmt.Println("Server starting on port ", config.Getnonempty("PORT"))
-
 	log.Fatal(http.ListenAndServe(config.Getnonempty("ROOT"), router.Use()))
 }

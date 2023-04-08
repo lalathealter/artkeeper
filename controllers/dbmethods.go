@@ -14,9 +14,15 @@ var (
 		VALUES($1, $2, $3)
 		;
 	`
+	dbselecturl string = `
+		SELECT * 
+		FROM ak_data.urls 
+		WHERE url_id=$1 
+		;
+	`
 )
 
-func Initdb() {
+func InitDB() {
 
 	initcommands := [...]string{
 		`
@@ -45,7 +51,7 @@ func Initdb() {
 		`
 			CREATE TABLE IF NOT EXISTS ak_data.urls (
 				url TEXT NOT NULL,
-				url_id SERIAL PRIMARY KEY NOT NULL,
+				url_id BIGSERIAL PRIMARY KEY NOT NULL,
 				url_description TEXT,
 				poster_id SERIAL NOT NULL,
 				CONSTRAINT poster_id
@@ -57,7 +63,7 @@ func Initdb() {
 		`,
 	}
 
-	db := dbconnect()
+	db := connectDB()
 	defer db.Close()
 
 	for _, comm := range initcommands {
@@ -69,7 +75,7 @@ func Initdb() {
 
 }
 
-func dbconnect() *sql.DB {
+func connectDB() *sql.DB {
 	db, err := sql.Open("postgres", config.Getnonempty("psqlconn"))
 	if err != nil {
 		log.Panicln(err)

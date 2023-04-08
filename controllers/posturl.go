@@ -8,26 +8,26 @@ import (
 	"github.com/lalathealter/artkeeper/models"
 )
 
-var Posturlhandler = factorapihandler(
-	readposturl,
-	saveposturl,
-	posturlrespond,
+var PostURLhandler = factorAPIHandler(
+	readPostURL,
+	savePostURL,
+	respondPostURL,
 )
 
-func readposturl(r *http.Request) (models.Message, error) {
-	return parsejsonmessage(r, models.Posturl{})
+func readPostURL(r *http.Request) (models.Message, error) {
+	return parseJSONMessage(r, models.PostURLRequest{})
 }
 
-func saveposturl(db *sql.DB) dbcaller {
+func savePostURL(db *sql.DB) dbcaller {
 	return func(m models.Message) (dbresult, error) {
-		p := m.(models.Posturl)
+		p := m.(models.PostURLRequest)
 		sqlstatement := dbinserturl
 		_, err := db.Exec(sqlstatement, p.Link, p.Description, 1)
 		return nil, err
 	}
 }
 
-func posturlrespond(w http.ResponseWriter, _ dbresult) {
+func respondPostURL(w http.ResponseWriter, _ dbresult) {
 	w.WriteHeader(http.StatusNoContent)
 	fmt.Fprintf(w, "Your resource has been accepted")
 }
