@@ -66,27 +66,27 @@ func parseJSONMessage[T models.Message](r *http.Request, target T) (T, error) {
 	return target, nil
 }
 
-func parseURLParams[T models.Message](r *http.Request, msg *T) error {
+func parseURLParams[T models.Message](r *http.Request, target T) (T, error) {
 	urlvals, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
-		return err
+		return *(new(T)), err
 	}
-	iterm := reflect.ValueOf(msg).Elem()
+	iterm := reflect.ValueOf(&target).Elem()
 	for i := 0; i < iterm.NumField(); i++ {
 		key := iterm.Type().Field(i).Tag.Get("urlparam")
 		paramval, err := getURLParam(&urlvals, key)
 		if err != nil {
-			return err
+			return *(new(T)), err
 		}
 
 		typedfield := iterm.Field(i).Interface()
 		reffedval, err := models.ReflectCastedStringlike(paramval, typedfield)
 		if err != nil {
-			return err
+			return *(new(T)), err
 		}
 		iterm.Field(i).Set(reffedval)
 	}
-	return nil
+	return target, nil
 }
 
 func getURLParam(uvals *url.Values, key string) (string, error) {

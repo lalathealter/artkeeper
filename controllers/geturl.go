@@ -16,13 +16,7 @@ var GetOneURLHandler = factorAPIHandler(
 )
 
 func readGetURL(r *http.Request) (models.Message, error) {
-	gr := models.GetURLRequest{}
-	err := parseURLParams(r, &gr)
-	if err != nil {
-		return nil, err
-	}
-
-	return gr, nil
+	return parseURLParams(r, models.GetURLRequest{})
 }
 
 func lookupOneURL(db *sql.DB) dbcaller {
