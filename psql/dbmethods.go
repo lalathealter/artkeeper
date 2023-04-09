@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	InsertURL string = `
+	InsertOneURL string = `
 		INSERT INTO ak_data.urls(url, url_description, poster_id) 
 		VALUES($1, $2, $3)
 		;
@@ -23,6 +23,11 @@ var (
 	SelectAllURLs string = `
 		SELECT * 
 		FROM ak_data.urls
+		;
+	`
+	DeleteOneURL = `
+		DELETE FROM ak_data.urls
+		WHERE url_id=$1
 		;
 	`
 )

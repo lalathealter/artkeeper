@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"reflect"
+	"strconv"
 
 	"github.com/lalathealter/artkeeper/config"
 )
@@ -54,6 +55,11 @@ func VerifyStruct[T Message](vstruct T) error {
 		}
 	}
 	return nil
+}
+
+func isValidInt[T Stringlike](in T) error {
+	_, err := strconv.Atoi(in.String())
+	return err
 }
 
 type Cleanable interface {

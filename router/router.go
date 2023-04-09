@@ -7,13 +7,19 @@ import (
 	"github.com/lalathealter/artkeeper/controllers"
 )
 
+const (
+	apiurls = "/api/urls"
+)
+
 func Use() *router {
 	rt := &router{}
 	rt.setroute("/", "GET", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello world!"))
 	})
-	rt.setroute("/api/urls", "POST", controllers.PostURLhandler)
-	rt.setroute("/api/urls", "GET", controllers.GetOneURLHandler)
+
+	rt.setroute(apiurls, "POST", controllers.PostURLhandler)
+	rt.setroute(apiurls, "GET", controllers.GetURLHandler)
+	rt.setroute(apiurls, "DELETE", controllers.DeleteURLHandler)
 	return rt
 }
 

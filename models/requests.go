@@ -3,7 +3,6 @@ package models
 import (
 	"fmt"
 	"net/url"
-	"strconv"
 	"strings"
 )
 
@@ -27,10 +26,22 @@ func (lid *LinkID) CleanSelf() {
 }
 
 func (lid *LinkID) ValidateSelf() error {
-	return nil
+	if *lid == "" {
+		return nil // allowing empty values for get all method
+	}
+	return isValidInt(*lid)
 }
 
 // ============
+
+type DeleteURLRequest struct {
+	// UserID *UserID `json:"userID"`
+	LinkID *LinkID `json:"linkID"`
+}
+
+func (dr DeleteURLRequest) VerifyValues() error {
+	return VerifyStruct(dr)
+}
 
 type PostURLRequest struct {
 	Link        *InputLink   `json:"link"`
@@ -103,10 +114,7 @@ type UserID string
 
 func (uid UserID) ValidateSelf() error {
 	// authenticate + authorize here?
-	if _, err := strconv.Atoi(uid.String()); err != nil {
-		return err
-	}
-	return nil
+	return isValidInt(uid)
 }
 
 func (uid *UserID) CleanSelf() {

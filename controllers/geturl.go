@@ -10,13 +10,13 @@ import (
 	"github.com/lalathealter/artkeeper/psql"
 )
 
-var GetOneURLHandler = factorAPIHandler(
-	readGetURL,
+var GetURLHandler = factorAPIHandler(
+	readGetURLRequest,
 	switchLookupURL,
 	respondGetURL,
 )
 
-func readGetURL(r *http.Request) (models.Message, error) {
+func readGetURLRequest(r *http.Request) (models.Message, error) {
 	return parseURLParams(r, models.GetURLRequest{})
 }
 
