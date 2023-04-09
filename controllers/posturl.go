@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"database/sql"
-	"fmt"
 	"net/http"
 
 	"github.com/lalathealter/artkeeper/models"
@@ -23,12 +22,12 @@ func savePostURL(db *sql.DB) dbcaller {
 	return func(m models.Message) (dbresult, error) {
 		p := m.(models.PostURLRequest)
 		sqlstatement := psql.InsertURL
-		_, err := db.Exec(sqlstatement, p.Link, p.Description, 1)
+		_, err := db.Exec(sqlstatement, extractFieldValues(&p)...)
 		return nil, err
 	}
 }
 
 func respondPostURL(w http.ResponseWriter, _ dbresult) {
 	w.WriteHeader(http.StatusNoContent)
-	fmt.Fprintf(w, "Your resource has been accepted")
+	w.Write([]byte("Your resource has been accepted"))
 }

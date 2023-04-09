@@ -10,7 +10,7 @@ import (
 // ====== INTERFACES =====
 
 type Stringlike interface {
-	InputLink | Description | LinkID | string
+	InputLink | Description | LinkID | UserID | string
 	String() string
 }
 

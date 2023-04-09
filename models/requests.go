@@ -3,6 +3,7 @@ package models
 import (
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
@@ -34,6 +35,7 @@ func (lid *LinkID) ValidateSelf() error {
 type PostURLRequest struct {
 	Link        *InputLink   `json:"link"`
 	Description *Description `json:"description"`
+	UserID      *UserID      `json:"userID"`
 }
 
 func (pr PostURLRequest) VerifyValues() error {
@@ -95,4 +97,22 @@ func (d *Description) CleanSelf() {
 
 func (d Description) String() string {
 	return string(d)
+}
+
+type UserID string
+
+func (uid UserID) ValidateSelf() error {
+	// authenticate + authorize here?
+	if _, err := strconv.Atoi(uid.String()); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (uid *UserID) CleanSelf() {
+	CleanStringlike(uid)
+}
+
+func (uid UserID) String() string {
+	return string(uid)
 }

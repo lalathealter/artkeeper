@@ -114,11 +114,20 @@ func parseSQLRows[T any](targetType T, rows *sql.Rows) ([]*T, error) {
 	return results, rows.Err()
 }
 
-func extractFieldPointers(in any) []any {
+func extractFieldPointers[T any](in *T) []any {
 	iter := reflect.ValueOf(in).Elem()
 	fieldptrs := make([]any, iter.NumField())
 	for i := 0; i < iter.NumField(); i++ {
 		fieldptrs[i] = iter.Field(i).Addr().Interface()
 	}
 	return fieldptrs
+}
+
+func extractFieldValues[T any](in *T) []any {
+	iter := reflect.ValueOf(in).Elem()
+	fieldvals := make([]any, iter.NumField())
+	for i := 0; i < iter.NumField(); i++ {
+		fieldvals[i] = iter.Field(i).Interface()
+	}
+	return fieldvals
 }
