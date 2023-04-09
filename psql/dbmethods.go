@@ -1,4 +1,4 @@
-package controllers
+package psql
 
 import (
 	"database/sql"
@@ -9,20 +9,25 @@ import (
 )
 
 var (
-	dbinserturl string = `
+	InsertURL string = `
 		INSERT INTO ak_data.urls(url, url_description, poster_id) 
 		VALUES($1, $2, $3)
 		;
 	`
-	dbselecturl string = `
+	SelectOneURL string = `
 		SELECT * 
 		FROM ak_data.urls 
 		WHERE url_id=$1 
 		;
 	`
+	SelectAllURLs string = `
+		SELECT * 
+		FROM ak_data.urls
+		;
+	`
 )
 
-func InitDB() {
+func Initialize() {
 
 	initcommands := [...]string{
 		`
@@ -63,7 +68,7 @@ func InitDB() {
 		`,
 	}
 
-	db := connectDB()
+	db := Connect()
 	defer db.Close()
 
 	for _, comm := range initcommands {
@@ -75,7 +80,7 @@ func InitDB() {
 
 }
 
-func connectDB() *sql.DB {
+func Connect() *sql.DB {
 	db, err := sql.Open("postgres", config.Getnonempty("psqlconn"))
 	if err != nil {
 		log.Panicln(err)

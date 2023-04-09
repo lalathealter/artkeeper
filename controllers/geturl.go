@@ -2,40 +2,59 @@ package controllers
 
 import (
 	"database/sql"
-	"fmt"
+	"encoding/json"
 	"log"
 	"net/http"
 
 	"github.com/lalathealter/artkeeper/models"
+	"github.com/lalathealter/artkeeper/psql"
 )
 
 var GetOneURLHandler = factorAPIHandler(
 	readGetURL,
-	lookupOneURL,
-	giveOneURL,
+	switchLookupURL,
+	respondGetURL,
 )
 
 func readGetURL(r *http.Request) (models.Message, error) {
 	return parseURLParams(r, models.GetURLRequest{})
 }
 
-func lookupOneURL(db *sql.DB) dbcaller {
+func switchLookupURL(db *sql.DB) dbcaller {
 	return func(m models.Message) (dbresult, error) {
-		greq := m.(models.GetURLRequest)
-		sqlstatement := dbselecturl
-		v := db.QueryRow(sqlstatement, greq.ID)
-		return v, nil
+		var sqlstatement string
+		var sqlargs []any
+
+		switch greq := m.(models.GetURLRequest); {
+		case *greq.ID != "":
+			sqlstatement = psql.SelectOneURL
+			sqlargs = []any{greq.ID}
+		// case *greq.Collection != "":
+
+		default:
+			sqlstatement = psql.SelectAllURLs
+
+		}
+
+		return db.Query(sqlstatement, sqlargs...)
 	}
 }
 
-func giveOneURL(w http.ResponseWriter, dbr dbresult) {
-	w.WriteHeader(http.StatusNoContent)
-	row := dbr.(*sql.Row)
+func respondGetURL(w http.ResponseWriter, dbr dbresult) {
+	rows := dbr.(*sql.Rows)
 
-	gres := models.GetURLResponse{}
-	err := row.Scan(extractFieldPointers(&gres)...)
+	responses, err := parseSQLRows(models.GetURLResponse{}, rows)
 	if err != nil {
 		log.Panicln(err)
 	}
-	fmt.Println(gres)
+
+	if len(responses) == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err = json.NewEncoder(w).Encode(responses); err != nil {
+		log.Panicln(err)
+	}
 }

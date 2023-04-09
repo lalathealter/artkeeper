@@ -35,18 +35,18 @@ func VerifyStruct[T Message](vstruct T) error {
 
 	for i := 0; i < reflect.ValueOf(vstruct).NumField(); i++ {
 		val := values.Field(i)
-		actval := reflect.Indirect(val)
-
-		fmt.Println("IN", actval)
+		actualval := reflect.Indirect(val)
+		currtype := actualval.Type()
+		fmt.Printf("IN: '%v' of type %v\n", actualval, currtype)
 		c, ok := val.Interface().(Cleanable)
 		if !ok {
-			return (fmt.Errorf("%v %v - cleaning method is not implemented", actval.Type(), actval))
+			return (fmt.Errorf("%v - cleaning method is not implemented", currtype))
 		}
 		c.CleanSelf()
 
 		v, ok := val.Interface().(Validatable)
 		if !ok {
-			return (fmt.Errorf("%v - validating method is not implemented", actval.Type()))
+			return (fmt.Errorf("%v - validating method is not implemented", currtype))
 		}
 		err := v.ValidateSelf()
 		if err != nil {
