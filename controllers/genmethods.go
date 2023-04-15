@@ -45,9 +45,7 @@ func factorAPIHandler(
 
 		fmt.Println("Gone through", msg)
 
-		db := psql.Connect()
-		defer db.Close()
-
+		db := psql.DB
 		dbres, err := call(db)(msg)
 		if err != nil {
 			log.Panicln(err)

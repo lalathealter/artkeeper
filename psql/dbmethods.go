@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 
+	_ "github.com/lib/pq"
+
 	"github.com/lalathealter/artkeeper/config"
 )
 
@@ -32,7 +34,9 @@ var (
 	`
 )
 
-func Initialize() {
+var DB *sql.DB
+
+func init() {
 
 	initcommands := [...]string{
 		`
@@ -73,11 +77,10 @@ func Initialize() {
 		`,
 	}
 
-	db := Connect()
-	defer db.Close()
+	DB = connect()
 
 	for _, comm := range initcommands {
-		_, err := db.Exec(comm)
+		_, err := DB.Exec(comm)
 		if err != nil {
 			log.Panicln(err)
 		}
@@ -85,7 +88,7 @@ func Initialize() {
 
 }
 
-func Connect() *sql.DB {
+func connect() *sql.DB {
 	db, err := sql.Open("postgres", config.Getnonempty("psqlconn"))
 	if err != nil {
 		log.Panicln(err)
@@ -97,6 +100,5 @@ func Connect() *sql.DB {
 	}
 
 	fmt.Println("Database connected")
-	// Don't forget to defer db.Close() this!!
 	return db
 }
