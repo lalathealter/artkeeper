@@ -37,7 +37,26 @@ var (
 var DB *sql.DB
 
 func init() {
+	DB = connect()
+	presetTables(DB)
+}
 
+func connect() *sql.DB {
+	db, err := sql.Open("postgres", config.Getnonempty("psqlconn"))
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	err = db.Ping()
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	fmt.Println("Database connected")
+	return db
+}
+
+func presetTables(db *sql.DB) {
 	initcommands := [...]string{
 		`
 			CREATE SCHEMA IF NOT EXISTS ak_data;
@@ -77,28 +96,10 @@ func init() {
 		`,
 	}
 
-	DB = connect()
-
 	for _, comm := range initcommands {
-		_, err := DB.Exec(comm)
+		_, err := db.Exec(comm)
 		if err != nil {
 			log.Panicln(err)
 		}
 	}
-
-}
-
-func connect() *sql.DB {
-	db, err := sql.Open("postgres", config.Getnonempty("psqlconn"))
-	if err != nil {
-		log.Panicln(err)
-	}
-
-	err = db.Ping()
-	if err != nil {
-		log.Panicln(err)
-	}
-
-	fmt.Println("Database connected")
-	return db
 }
