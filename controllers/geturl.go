@@ -32,8 +32,12 @@ func switchLookupURL(db *sql.DB) dbcaller {
 		// case *greq.Collection != "":
 
 		default:
-			sqlstatement = psql.SelectAllURLs
-
+			sqlstatement = psql.SelectAllURLsWithPagination
+			if *greq.Limit == "0" {
+				sqlargs = []any{psql.DefaultPaginationLimit, greq.Offset}
+			} else {
+				sqlargs = []any{greq.Limit, greq.Offset}
+			}
 		}
 
 		return db.Query(sqlstatement, sqlargs...)

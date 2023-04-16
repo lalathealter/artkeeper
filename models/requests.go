@@ -3,12 +3,31 @@ package models
 import (
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
 type GetURLRequest struct {
-	ID *LinkID `urlparam:"id"`
+	ID     *LinkID         `urlparam:"id"`
+	Offset *StringifiedInt `urlparam:"offset"`
+	Limit  *StringifiedInt `urlparam:"limit"`
 	// client string
+}
+
+type StringifiedInt string
+
+func (i *StringifiedInt) CleanSelf() {
+	CleanStringlike(i) // may be unnecessary (??)
+	v, _ := strconv.Atoi(string(*i))
+	(*i) = StringifiedInt(strconv.Itoa(v))
+}
+
+func (i *StringifiedInt) ValidateSelf() error {
+	return nil
+}
+
+func (i StringifiedInt) String() string {
+	return string(i)
 }
 
 func (gr GetURLRequest) VerifyValues() error {

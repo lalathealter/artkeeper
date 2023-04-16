@@ -11,7 +11,10 @@ import (
 // ====== INTERFACES =====
 
 type Stringlike interface {
-	InputLink | Description | LinkID | UserID | string
+	string |
+		InputLink | Description |
+		LinkID | UserID |
+		StringifiedInt
 	String() string
 }
 
@@ -20,7 +23,11 @@ func ReflectCastedStringlike(payload string, reference interface{}) (reflect.Val
 	case *LinkID:
 		lid := LinkID(payload)
 		return reflect.ValueOf(&lid), nil
+	case *StringifiedInt:
+		num := StringifiedInt(payload)
+		return reflect.ValueOf(&num), nil
 	default:
+
 		return reflect.Value{}, fmt.Errorf("casting to Stringlike isn't implemented in the type switch with %T;", reference)
 	}
 }

@@ -27,6 +27,16 @@ var (
 		FROM ak_data.urls
 		;
 	`
+	DefaultPaginationLimit      string = "10"
+	SelectAllURLsWithPagination string = `
+		SELECT *
+		FROM ak_data.urls
+		ORDER BY url_id
+		LIMIT $1
+		OFFSET $2
+		;
+	`
+
 	DeleteOneURL = `
 		DELETE FROM ak_data.urls
 		WHERE url_id=$1
