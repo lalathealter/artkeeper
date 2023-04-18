@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	apiurls = "/api/urls"
+	apiurls        = "/api/urls"
+	apicollections = "/api/collections"
 )
 
 func Use() *router {
@@ -20,6 +21,9 @@ func Use() *router {
 	rt.setroute(apiurls, "POST", controllers.PostURLhandler)
 	rt.setroute(apiurls, "GET", controllers.GetURLHandler)
 	rt.setroute(apiurls, "DELETE", controllers.DeleteURLHandler)
+
+	rt.setroute(apicollections, "POST", controllers.PostCollectionHandler)
+	// rt.setroute(apicollections)
 	return rt
 }
 

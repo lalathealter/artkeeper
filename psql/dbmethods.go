@@ -36,10 +36,17 @@ var (
 		OFFSET $2
 		;
 	`
-
 	DeleteOneURL = `
 		DELETE FROM ak_data.urls
 		WHERE url_id=$1
+		;
+	`
+
+	// ====================
+
+	InsertOneCollection string = `
+		INSERT INTO ak_data.collections(url_ids_collection, owner_id, collection_description)
+		VALUES($1, $2, $3)
 		;
 	`
 )
@@ -83,6 +90,7 @@ func presetTables(db *sql.DB) {
 			CREATE TABLE IF NOT EXISTS ak_data.collections (
 				collection_id SERIAL PRIMARY KEY NOT NULL,
 				url_ids_collection INT [],
+				collection_description TEXT,
 				owner_id SERIAL NOT NULL,
 				CONSTRAINT owner_id
 					FOREIGN KEY(owner_id)

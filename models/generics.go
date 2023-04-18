@@ -37,28 +37,49 @@ func CleanStringlike[T Stringlike](fieldptr *T) {
 	*fieldptr = T(cleanedval)
 }
 
+func VerifyFieldValue(val reflect.Value) error {
+
+	actualval := reflect.Indirect(val)
+	currtype := actualval.Type()
+	fmt.Printf("IN: '%v' of type %v\n", actualval, currtype)
+	c, ok := val.Interface().(Cleanable)
+	if !ok {
+		return (fmt.Errorf("%v - cleaning method is not implemented", currtype))
+	}
+	c.CleanSelf()
+
+	v, ok := val.Interface().(Validatable)
+	if !ok {
+		return (fmt.Errorf("%v - validating method is not implemented", currtype))
+	}
+	err := v.ValidateSelf()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func VerifyStruct[T Message](vstruct T) error {
 
 	values := reflect.ValueOf(vstruct)
 
 	for i := 0; i < reflect.ValueOf(vstruct).NumField(); i++ {
-		val := values.Field(i)
-		actualval := reflect.Indirect(val)
-		currtype := actualval.Type()
-		fmt.Printf("IN: '%v' of type %v\n", actualval, currtype)
-		c, ok := val.Interface().(Cleanable)
-		if !ok {
-			return (fmt.Errorf("%v - cleaning method is not implemented", currtype))
-		}
-		c.CleanSelf()
+		field := values.Field(i)
 
-		v, ok := val.Interface().(Validatable)
-		if !ok {
-			return (fmt.Errorf("%v - validating method is not implemented", currtype))
-		}
-		err := v.ValidateSelf()
-		if err != nil {
-			return err
+		if field.Kind() == reflect.Slice || field.Kind() == reflect.Array {
+			for i := 0; i < field.Len(); i++ {
+				err := VerifyFieldValue(field.Index(i))
+				fmt.Println(field.Index(i), err)
+				if err != nil {
+					return err
+				}
+			}
+		} else {
+			err := VerifyFieldValue(field)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
