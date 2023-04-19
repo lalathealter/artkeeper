@@ -38,8 +38,11 @@ func CleanStringlike[T Stringlike](fieldptr *T) {
 }
 
 func VerifyFieldValue(val reflect.Value) error {
-
 	actualval := reflect.Indirect(val)
+	if !actualval.IsValid() {
+		return fmt.Errorf("not enough values for the struct's fields provided;")
+	}
+
 	currtype := actualval.Type()
 	fmt.Printf("IN: '%v' of type %v\n", actualval, currtype)
 	c, ok := val.Interface().(Cleanable)
