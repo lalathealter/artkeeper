@@ -49,6 +49,26 @@ var (
 		VALUES($1, $2, $3)
 		;
 	`
+	UpdateLinksInCollection string = `
+		UPDATE ak_data.collections
+		SET url_ids_collection = (
+			SELECT ARRAY (
+				SELECT DISTINCT * 
+				FROM unnest(
+					array_append(url_ids_collection, $1)
+				)
+			)
+		)
+		WHERE collection_id=$2
+		;
+	`
+
+	SelectOneCollection string = `
+		SELECT *
+		FROM ak_data.collections
+		WHERE collection_id=$1
+		;
+	`
 )
 
 var DB *sql.DB

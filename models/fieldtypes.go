@@ -27,17 +27,17 @@ func (gr GetURLRequest) VerifyValues() error {
 	return VerifyStruct(gr)
 }
 
-type LinkID string
+type ResourceID string
 
-func (lid LinkID) String() string {
+func (lid ResourceID) String() string {
 	return string(lid)
 }
 
-func (lid *LinkID) CleanSelf() {
+func (lid *ResourceID) CleanSelf() {
 	CleanStringlike(lid)
 }
 
-func (lid *LinkID) ValidateSelf() error {
+func (lid *ResourceID) ValidateSelf() error {
 	if *lid == "" {
 		return nil // allowing empty values for get all method
 	}

@@ -8,20 +8,18 @@ import (
 	"github.com/lalathealter/artkeeper/config"
 )
 
-// ====== INTERFACES =====
-
 type Stringlike interface {
 	string |
 		InputLink | Description |
-		LinkID | UserID |
+		ResourceID | UserID |
 		StringifiedInt
 	String() string
 }
 
 func ReflectCastedStringlike(payload string, reference interface{}) (reflect.Value, error) {
 	switch (reference).(type) {
-	case *LinkID:
-		lid := LinkID(payload)
+	case *ResourceID:
+		lid := ResourceID(payload)
 		return reflect.ValueOf(&lid), nil
 	case *StringifiedInt:
 		num := StringifiedInt(payload)
@@ -104,4 +102,3 @@ type Message interface {
 	VerifyValues() error
 }
 
-// ============

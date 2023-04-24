@@ -1,7 +1,7 @@
 package models
 
 type GetURLRequest struct {
-	ID     *LinkID         `urlparam:"id"`
+	ID     *ResourceID         `urlparam:"linkID"`
 	Offset *StringifiedInt `urlparam:"offset"`
 	Limit  *StringifiedInt `urlparam:"limit"`
 	// client string
@@ -9,7 +9,7 @@ type GetURLRequest struct {
 
 type DeleteURLRequest struct {
 	// UserID *UserID `json:"userID"`
-	LinkID *LinkID `json:"linkID"`
+	LinkID *ResourceID `json:"linkID"`
 }
 
 func (dr DeleteURLRequest) VerifyValues() error {
@@ -27,11 +27,28 @@ func (pr PostURLRequest) VerifyValues() error {
 }
 
 type PostCollectionRequest struct {
-	LinkIDs     []*LinkID    `json:"linkIDs"`
+	LinkIDs     []*ResourceID    `json:"linkIDs"`
 	Description *Description `json:"description"`
 	UserID      *UserID      `json:"userID"`
 }
 
 func (pcr PostCollectionRequest) VerifyValues() error {
 	return VerifyStruct(pcr)
+}
+
+type PutInCollectionRequest struct {
+	LinkID *ResourceID `json:"linkID"`
+	CollID *ResourceID `json:"collID"`
+}
+
+func (putcr PutInCollectionRequest) VerifyValues() error {
+	return VerifyStruct(putcr)
+}
+
+type GetCollectionRequest struct {
+	ID *ResourceID `urlparam:"collID"`
+}
+
+func (gcr GetCollectionRequest) VerifyValues() error {
+	return VerifyStruct(gcr)
 }

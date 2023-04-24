@@ -22,7 +22,9 @@ func Use() *router {
 	rt.setroute(apiurls, "GET", controllers.GetURLHandler)
 	rt.setroute(apiurls, "DELETE", controllers.DeleteURLHandler)
 
+	rt.setroute(apicollections, "GET", controllers.GetCollectionHandler)
 	rt.setroute(apicollections, "POST", controllers.PostCollectionHandler)
+	rt.setroute(apicollections, "PUT", controllers.PutInCollectionHandler)
 	// rt.setroute(apicollections)
 	return rt
 }
