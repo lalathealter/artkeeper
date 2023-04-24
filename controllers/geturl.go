@@ -12,7 +12,7 @@ import (
 
 var GetURLHandler = factorAPIHandler(
 	readGetURLRequest,
-	switchLookupURL,
+	lookupURL,
 	respondGetURL,
 )
 
@@ -20,24 +20,35 @@ func readGetURLRequest(r *http.Request) (models.Message, error) {
 	return parseURLParams(r, models.GetURLRequest{})
 }
 
-func switchLookupURL(db *sql.DB) dbcaller {
-	return func(m models.Message) (dbresult, error) {
-		var sqlstatement string
-		var sqlargs []any
+func lookupURL(db *sql.DB) dbcaller {
+	return func(msg models.Message) (dbresult, error) {
+		greq := msg.(models.GetURLRequest) 
+		sqlstatement := psql.SelectOneURL
+		sqlargs := []any{greq.ID}
+		return db.Query(sqlstatement, sqlargs...)
+	}
+}
 
-		switch greq := m.(models.GetURLRequest); {
-		case *greq.ID != "":
-			sqlstatement = psql.SelectOneURL
-			sqlargs = []any{greq.ID}
-		default:
-			sqlstatement = psql.SelectAllURLsWithPagination
-			if *greq.Limit == "0" {
-				sqlargs = []any{psql.DefaultPaginationLimit, greq.Offset}
-			} else {
-				sqlargs = []any{greq.Limit, greq.Offset}
-			}
+var GetLatestURLsHandler = factorAPIHandler(
+	readGetLatestURLsRequest,
+	getLatestURLs,
+	respondGetURL,
+)
+
+func readGetLatestURLsRequest(r *http.Request) (models.Message, error) {
+	return parseURLParams(r, models.GetLatestURLsRequest{})
+}
+
+func getLatestURLs(db *sql.DB) dbcaller {
+	return func(msg models.Message) (dbresult, error) {
+		greqLatest := msg.(models.GetLatestURLsRequest)
+		sqlstatement := psql.SelectLatestURLsWithPagination
+		var sqlargs []any 
+		if (*greqLatest.Limit == "0") {
+			sqlargs = []any{psql.DefaultPaginationLimit, greqLatest.Offset}
+		} else {
+			sqlargs = []any{greqLatest.Limit, greqLatest.Offset}
 		}
-
 		return db.Query(sqlstatement, sqlargs...)
 	}
 }

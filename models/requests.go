@@ -2,9 +2,18 @@ package models
 
 type GetURLRequest struct {
 	ID     *ResourceID         `urlparam:"linkID"`
+}
+func (gr GetURLRequest) VerifyValues() error {
+	return VerifyStruct(gr)
+}
+
+type GetLatestURLsRequest struct {
 	Offset *StringifiedInt `urlparam:"offset"`
 	Limit  *StringifiedInt `urlparam:"limit"`
-	// client string
+}
+
+func (grLatest GetLatestURLsRequest) VerifyValues() error {
+	return VerifyStruct(grLatest)
 }
 
 type DeleteURLRequest struct {

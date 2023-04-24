@@ -28,10 +28,10 @@ var (
 		;
 	`
 	DefaultPaginationLimit      string = "10"
-	SelectAllURLsWithPagination string = `
+	SelectLatestURLsWithPagination string = `
 		SELECT *
 		FROM ak_data.urls
-		ORDER BY url_id
+		ORDER BY url_id DESC
 		LIMIT $1
 		OFFSET $2
 		;

@@ -23,10 +23,6 @@ func (i StringifiedInt) String() string {
 	return string(i)
 }
 
-func (gr GetURLRequest) VerifyValues() error {
-	return VerifyStruct(gr)
-}
-
 type ResourceID string
 
 func (lid ResourceID) String() string {
@@ -38,9 +34,6 @@ func (lid *ResourceID) CleanSelf() {
 }
 
 func (lid *ResourceID) ValidateSelf() error {
-	if *lid == "" {
-		return nil // allowing empty values for get all method
-	}
 	return isValidInt(*lid)
 }
 

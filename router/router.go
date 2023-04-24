@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -21,6 +22,9 @@ func Use() *router {
 	rt.setroute(apiurls, "POST", controllers.PostURLhandler)
 	rt.setroute(apiurls, "GET", controllers.GetURLHandler)
 	rt.setroute(apiurls, "DELETE", controllers.DeleteURLHandler)
+
+	apiurlslatest := fmt.Sprintf("%v/%v", apiurls, "latest")
+	rt.setroute(apiurlslatest, "GET", controllers.GetLatestURLsHandler)
 
 	rt.setroute(apicollections, "GET", controllers.GetCollectionHandler)
 	rt.setroute(apicollections, "POST", controllers.PostCollectionHandler)
