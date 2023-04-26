@@ -10,72 +10,15 @@ import (
 	"github.com/lalathealter/artkeeper/config"
 )
 
-var (
-	InsertOneURL string = `
-		INSERT INTO ak_data.urls(url, url_description, poster_id) 
-		VALUES($1, $2, $3)
-		;
-	`
-	SelectOneURL string = `
-		SELECT * 
-		FROM ak_data.urls 
-		WHERE url_id=$1 
-		;
-	`
-	SelectAllURLs string = `
-		SELECT * 
-		FROM ak_data.urls
-		;
-	`
-	DefaultPaginationLimit      string = "10"
-	SelectLatestURLsWithPagination string = `
-		SELECT *
-		FROM ak_data.urls
-		ORDER BY url_id DESC
-		LIMIT $1
-		OFFSET $2
-		;
-	`
-	DeleteOneURL = `
-		DELETE FROM ak_data.urls
-		WHERE url_id=$1
-		;
-	`
-
-	// ====================
-
-	InsertOneCollection string = `
-		INSERT INTO ak_data.collections(url_ids_collection, owner_id, collection_description)
-		VALUES($1, $2, $3)
-		;
-	`
-	UpdateLinksInCollection string = `
-		UPDATE ak_data.collections
-		SET url_ids_collection = (
-			SELECT ARRAY (
-				SELECT DISTINCT * 
-				FROM unnest(
-					array_append(url_ids_collection, $1)
-				)
-			)
-		)
-		WHERE collection_id=$2
-		;
-	`
-
-	SelectOneCollection string = `
-		SELECT *
-		FROM ak_data.collections
-		WHERE collection_id=$1
-		;
-	`
-)
-
-var DB *sql.DB
+var currentDB *sql.DB
 
 func init() {
-	DB = connect()
-	presetTables(DB)
+	currentDB = connect()
+	presetTables(currentDB)
+}
+
+func GetDB() *sql.DB {
+	return currentDB
 }
 
 func connect() *sql.DB {

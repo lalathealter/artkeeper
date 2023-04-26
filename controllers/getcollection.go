@@ -7,12 +7,10 @@ import (
 	"net/http"
 
 	"github.com/lalathealter/artkeeper/models"
-	"github.com/lalathealter/artkeeper/psql"
 )
 
 var GetCollectionHandler = factorAPIHandler(
 	readGetCollectionRequest,
-	lookupCollection,
 	respondGetCollection,
 )
 
@@ -20,19 +18,7 @@ func readGetCollectionRequest(r *http.Request) (models.Message, error) {
 	return parseURLParams(r, models.GetCollectionRequest{})
 }
 
-func lookupCollection(db *sql.DB) dbcaller {
-	return func(msg models.Message) (dbresult, error) {
-
-		gcr := msg.(models.GetCollectionRequest)
-
-		sqlstatement := psql.SelectOneCollection
-		sqlargs := []any{ gcr.ID }
-
-		return db.Query(sqlstatement, sqlargs...)
-	}
-}
-
-func respondGetCollection(w http.ResponseWriter, dbr dbresult) {
+func respondGetCollection(w http.ResponseWriter, dbr models.DBResult) {
 	rows := dbr.(*sql.Rows)
 	responses, err := parseSQLRows(models.GetCollectionResponse{}, rows)
 

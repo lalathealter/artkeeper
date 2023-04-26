@@ -14,15 +14,13 @@ import (
 	_ "github.com/lib/pq"
 )
 
-type dbresult interface{}
 type readmethod func(*http.Request) (models.Message, error)
-type dbcaller func(models.Message) (dbresult, error)
-type calldbmethod func(*sql.DB) dbcaller
-type respondmethod func(http.ResponseWriter, dbresult)
+// type dbcaller func(models.Message) (dbresult, error)
+// type calldbmethod func(*sql.DB) dbcaller
+type respondmethod func(http.ResponseWriter, models.DBResult)
 
 func factorAPIHandler(
 	read readmethod,
-	call calldbmethod,
 	respond respondmethod,
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -45,8 +43,8 @@ func factorAPIHandler(
 
 		fmt.Println("Gone through", msg)
 
-		db := psql.DB
-		dbres, err := call(db)(msg)
+		db := psql.GetDB()
+		dbres, err := msg.Call(db)
 		if err != nil {
 			log.Panicln(err)
 		}
@@ -95,14 +93,14 @@ func parseURLParams[T models.Message](r *http.Request, target T) (T, error) {
 // 	return param, nil
 // }
 
-func parseSQLRows[T any](targetType T, rows *sql.Rows) ([]*T, error) {
+func parseSQLRows[T any](responseFormat T, rows *sql.Rows) ([]*T, error) {
 	defer rows.Close()
 
 	results := make([]*T, 0)
 	i := 0
 	for rows.Next() {
 		results = append(results, new(T))
-		err := rows.Scan(extractFieldPointers(results[i])...)
+		err := rows.Scan(models.ExtractFieldPointers(results[i])...)
 		if err != nil {
 			return nil, err
 		}
@@ -112,20 +110,3 @@ func parseSQLRows[T any](targetType T, rows *sql.Rows) ([]*T, error) {
 	return results, rows.Err()
 }
 
-func extractFieldPointers[T any](in *T) []any {
-	iter := reflect.ValueOf(in).Elem()
-	fieldptrs := make([]any, iter.NumField())
-	for i := 0; i < iter.NumField(); i++ {
-		fieldptrs[i] = iter.Field(i).Addr().Interface()
-	}
-	return fieldptrs
-}
-
-func extractFieldValues[T any](in *T) []any {
-	iter := reflect.ValueOf(in).Elem()
-	fieldvals := make([]any, iter.NumField())
-	for i := 0; i < iter.NumField(); i++ {
-		fieldvals[i] = iter.Field(i).Interface()
-	}
-	return fieldvals
-}

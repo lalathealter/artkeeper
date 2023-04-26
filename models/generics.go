@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -15,6 +16,21 @@ type Stringlike interface {
 		StringifiedInt
 	String() string
 }
+
+type Cleanable interface {
+	CleanSelf()
+}
+
+type Validatable interface {
+	ValidateSelf() error
+}
+
+type Message interface {
+	VerifyValues() error
+	Call(*sql.DB) (DBResult, error)
+}
+
+type DBResult interface{}
 
 func ReflectCastedStringlike(payload string, reference interface{}) (reflect.Value, error) {
 	switch (reference).(type) {
@@ -91,14 +107,21 @@ func isValidInt[T Stringlike](in T) error {
 	return err
 }
 
-type Cleanable interface {
-	CleanSelf()
-}
-type Validatable interface {
-	ValidateSelf() error
+
+func ExtractFieldPointers[T any](in *T) []any {
+	iter := reflect.ValueOf(in).Elem()
+	fieldptrs := make([]any, iter.NumField())
+	for i := 0; i < iter.NumField(); i++ {
+		fieldptrs[i] = iter.Field(i).Addr().Interface()
+	}
+	return fieldptrs
 }
 
-type Message interface {
-	VerifyValues() error
+func ExtractFieldValues[T any](in *T) []any {
+	iter := reflect.ValueOf(in).Elem()
+	fieldvals := make([]any, iter.NumField())
+	for i := 0; i < iter.NumField(); i++ {
+		fieldvals[i] = iter.Field(i).Interface()
+	}
+	return fieldvals
 }
-

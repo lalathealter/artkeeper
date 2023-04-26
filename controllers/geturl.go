@@ -7,53 +7,25 @@ import (
 	"net/http"
 
 	"github.com/lalathealter/artkeeper/models"
-	"github.com/lalathealter/artkeeper/psql"
 )
 
 var GetURLHandler = factorAPIHandler(
 	readGetURLRequest,
-	lookupURL,
 	respondGetURL,
 )
 
 func readGetURLRequest(r *http.Request) (models.Message, error) {
 	return parseURLParams(r, models.GetURLRequest{})
 }
-
-func lookupURL(db *sql.DB) dbcaller {
-	return func(msg models.Message) (dbresult, error) {
-		greq := msg.(models.GetURLRequest) 
-		sqlstatement := psql.SelectOneURL
-		sqlargs := []any{greq.ID}
-		return db.Query(sqlstatement, sqlargs...)
-	}
-}
-
 var GetLatestURLsHandler = factorAPIHandler(
 	readGetLatestURLsRequest,
-	getLatestURLs,
 	respondGetURL,
 )
 
 func readGetLatestURLsRequest(r *http.Request) (models.Message, error) {
 	return parseURLParams(r, models.GetLatestURLsRequest{})
 }
-
-func getLatestURLs(db *sql.DB) dbcaller {
-	return func(msg models.Message) (dbresult, error) {
-		greqLatest := msg.(models.GetLatestURLsRequest)
-		sqlstatement := psql.SelectLatestURLsWithPagination
-		var sqlargs []any 
-		if (*greqLatest.Limit == "0") {
-			sqlargs = []any{psql.DefaultPaginationLimit, greqLatest.Offset}
-		} else {
-			sqlargs = []any{greqLatest.Limit, greqLatest.Offset}
-		}
-		return db.Query(sqlstatement, sqlargs...)
-	}
-}
-
-func respondGetURL(w http.ResponseWriter, dbr dbresult) {
+func respondGetURL(w http.ResponseWriter, dbr models.DBResult) {
 	rows := dbr.(*sql.Rows)
 
 	responses, err := parseSQLRows(models.GetURLResponse{}, rows)
