@@ -181,3 +181,24 @@ func (gcr GetCollectionRequest) Call(db *sql.DB) (DBResult, error) {
 
 	return db.Query(sqlstatement, sqlargs...)
 }
+
+type DeleteCollectionRequest struct {
+	CollID *ResourceID `json:"collID"`
+}
+
+func (dcr DeleteCollectionRequest) VerifyValues() error {
+	return VerifyStruct(dcr)
+}
+
+const deleteOneCollection = `
+	DELETE FROM ak_data.collections 
+	WHERE collection_id=$1
+	;
+`
+
+func (dcr DeleteCollectionRequest) Call(db *sql.DB) (DBResult, error) {
+	sqlstatement := deleteOneCollection 
+	return db.Exec(sqlstatement, ExtractFieldValues(&dcr)...)
+}
+
+
