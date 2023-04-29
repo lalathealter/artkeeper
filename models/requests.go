@@ -79,7 +79,8 @@ const deleteOneURL = `
 
 func (dr DeleteURLRequest) Call(db *sql.DB) (DBResult, error) {
 	sqlstatement := deleteOneURL
-	return db.Exec(sqlstatement, ExtractFieldValues(&dr)...)
+	sqlargs := []any{ dr.LinkID }
+	return db.Exec(sqlstatement, sqlargs...)
 }
 
 type PostURLRequest struct {
@@ -100,7 +101,8 @@ const insertOneURL = `
 	
 func (pr PostURLRequest) Call(db *sql.DB) (DBResult, error) {
 	sqlstatement := insertOneURL
-	return db.Exec(sqlstatement, ExtractFieldValues(&pr)...)
+	sqlargs := []any{ pr.Link, pr.Description, pr.UserID }
+	return db.Exec(sqlstatement, sqlargs...)
 }
 
 type PostCollectionRequest struct {
@@ -198,7 +200,8 @@ const deleteOneCollection = `
 
 func (dcr DeleteCollectionRequest) Call(db *sql.DB) (DBResult, error) {
 	sqlstatement := deleteOneCollection 
-	return db.Exec(sqlstatement, ExtractFieldValues(&dcr)...)
+	sqlargs := []any{ dcr.CollID }
+	return db.Exec(sqlstatement, sqlargs...)
 }
 
 
