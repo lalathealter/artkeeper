@@ -108,20 +108,3 @@ func isValidInt[T Stringlike](in T) error {
 }
 
 
-func ExtractFieldPointers[T any](in *T) []any {
-	iter := reflect.ValueOf(in).Elem()
-	fieldptrs := make([]any, iter.NumField())
-	for i := 0; i < iter.NumField(); i++ {
-		fieldptrs[i] = iter.Field(i).Addr().Interface()
-	}
-	return fieldptrs
-}
-
-// func ExtractFieldValues[T any](in *T) []any {
-// 	iter := reflect.ValueOf(in).Elem()
-// 	fieldvals := make([]any, iter.NumField())
-// 	for i := 0; i < iter.NumField(); i++ {
-// 		fieldvals[i] = iter.Field(i).Interface()
-// 	}
-// 	return fieldvals
-// }

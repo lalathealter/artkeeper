@@ -100,7 +100,20 @@ func parseSQLRows[T any](responseFormat T, rows *sql.Rows) ([]*T, error) {
 	i := 0
 	for rows.Next() {
 		results = append(results, new(T))
-		err := rows.Scan(models.ExtractFieldPointers(results[i])...)
+		fieldMap, err := ExtractFieldPointersIntoNamedMap(results[i])
+		if err != nil {
+			return nil, err
+		}
+		sqlColumns, err := rows.Columns()
+		if err != nil {
+			return nil, err
+		}
+
+		orderedPointersArr := make([]any, len(fieldMap))
+		for i, column := range sqlColumns {
+			orderedPointersArr[i] = fieldMap[column]
+		}
+		err = rows.Scan(orderedPointersArr...)
 		if err != nil {
 			return nil, err
 		}
@@ -110,3 +123,26 @@ func parseSQLRows[T any](responseFormat T, rows *sql.Rows) ([]*T, error) {
 	return results, rows.Err()
 }
 
+func ExtractFieldPointersIntoNamedMap[T any](in *T) (map[string]any, error) {
+	fieldMap := make(map[string]any)
+	iter := reflect.ValueOf(in).Elem()
+	for i := 0; i < iter.NumField(); i++ {
+		currPtr	 := iter.Field(i).Addr().Interface()
+		columnName := iter.Type().Field(i).Tag.Get("field") // sql field tag
+		if columnName == "" {
+			return nil, fmt.Errorf("Struct type %T doesn't provide the necessary field tags for successful sql parsing", *in)
+		}
+		fieldMap[columnName] = currPtr
+		
+	}
+	return fieldMap, nil
+}
+
+// func ExtractFieldValues[T any](in *T) []any {
+// 	iter := reflect.ValueOf(in).Elem()
+// 	fieldvals := make([]any, iter.NumField())
+// 	for i := 0; i < iter.NumField(); i++ {
+// 		fieldvals[i] = iter.Field(i).Interface()
+// 	}
+// 	return fieldvals
+// }
