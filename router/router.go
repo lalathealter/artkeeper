@@ -14,10 +14,12 @@ const (
 )
 
 func Use() *router {
-	rt := &router{}
+	rt := &router{	}
+
 	rt.setroute("/", "GET", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Hello world!"))
 	})
+
 
 	rt.setroute(apiurls, "POST", controllers.PostURLhandler)
 	rt.setroute(apiurls, "GET", controllers.GetURLHandler)
@@ -33,36 +35,50 @@ func Use() *router {
 	return rt
 }
 
-type router struct {
-	routes []routeEntry
-}
+type router map[int][]routeEntry
 
 func (rt *router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	for _, rentry := range rt.routes {
-		if rentry.doesmatch(r) {
-			rentry.Handler.ServeHTTP(w, r)
-			return
+	matchedHandler := http.NotFound
+	reqPathTokens := strings.Split(r.URL.Path, "/") 
+	for _, rentry := range (*rt)[len(reqPathTokens)] {
+		if rentry.doesMatchMethod(r) {
+			score := rentry.doesMatchPath(reqPathTokens) 
+			if score { 
+				matchedHandler = rentry.Handler.ServeHTTP
+			}
 		}
 	}
 
-	http.NotFound(w, r)
+	matchedHandler(w, r)
+}
+
+func (rentry *routeEntry) doesMatchPath(requestPathTokens []string) (bool) {
+	for i, val := range requestPathTokens {
+		currToken := rentry.Path[i]
+		if val != currToken && currToken != "*" {
+			return false 
+		}
+	}
+	return true
 }
 
 func (rt *router) setroute(p string, m string, hf http.HandlerFunc) {
+	pathTokens := strings.Split(p, "/")
 	rentry := routeEntry{
-		Path:    p,
+		Path:    pathTokens,
 		Method:  strings.ToUpper(m),
 		Handler: hf,
 	}
-	rt.routes = append(rt.routes, rentry)
+	l := len(pathTokens)
+	(*rt)[l] = append((*rt)[l], rentry)
 }
 
 type routeEntry struct {
-	Path    string
+	Path    []string
 	Method  string
 	Handler http.HandlerFunc
 }
 
-func (rentry *routeEntry) doesmatch(r *http.Request) bool {
-	return r.Method == rentry.Method && r.URL.Path == rentry.Path
+func (rentry *routeEntry) doesMatchMethod(r *http.Request) bool {
+	return r.Method == rentry.Method 
 }
