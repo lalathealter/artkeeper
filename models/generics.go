@@ -104,7 +104,10 @@ func VerifyStruct[T Message](vstruct T) error {
 
 func isValidInt[T Stringlike](in T) error {
 	_, err := strconv.Atoi(in.String())
-	return err
+	if err != nil {
+		return fmt.Errorf("A provided value `%v` isn't a valid integer;", in)
+	}
+	return nil
 }
 
 

@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"net/url"
 	"reflect"
+	"strconv"
+	"strings"
 
 	"github.com/lalathealter/artkeeper/models"
 	"github.com/lalathealter/artkeeper/psql"
@@ -64,18 +66,33 @@ func parseJSONMessage[T models.Message](r *http.Request, target T) (T, error) {
 	return target, nil
 }
 
-func parseURLParams[T models.Message](r *http.Request, target T) (T, error) {
-	urlvals, err := url.ParseQuery(r.URL.RawQuery)
+func parseURLValues[T models.Message](r *http.Request, target T) (T, error) {
+	urlPathTokens := strings.Split(r.URL.Path, "/")
+	urlQueryVals, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
 		return *(new(T)), err
 	}
 	iterm := reflect.ValueOf(&target).Elem()
 	for i := 0; i < iterm.NumField(); i++ {
-		key := iterm.Type().Field(i).Tag.Get("urlparam")
-		paramval := urlvals.Get(key) // may be empty string
+		var value string 
+		tagger := iterm.Type().Field(i).Tag
 
+		queryKey, ok := tagger.Lookup("urlquery")
+		if ok {
+			value = urlQueryVals.Get(queryKey) // may be empty string
+		} 
+
+		paramIndexStr, ok := tagger.Lookup("urlparam")
+		if ok {
+			ind, err := strconv.Atoi(paramIndexStr)
+			if err != nil {
+				return *(new(T)), fmt.Errorf("failed to parse a url parameter because of incorrect tagging in type declaration of %T (param index is can't be int);", target)
+			}
+			value = urlPathTokens[len(urlPathTokens) - 1 - ind]
+		}
+ 
 		typedfield := iterm.Field(i).Interface()
-		reffedval, err := models.ReflectCastedStringlike(paramval, typedfield)
+		reffedval, err := models.ReflectCastedStringlike(value, typedfield)
 		if err != nil {
 			return *(new(T)), err
 		}
@@ -83,15 +100,6 @@ func parseURLParams[T models.Message](r *http.Request, target T) (T, error) {
 	}
 	return target, nil
 }
-
-// func getURLParam(uvals *url.Values, key string) (string, error) {
-// 	paramfound := uvals.Has(key)
-// 	if !paramfound {
-// 		return "", fmt.Errorf("URL Parameter %v wasn't provided;", key)
-// 	}
-// 	param := uvals.Get(key)
-// 	return param, nil
-// }
 
 func parseSQLRows[T any](responseFormat T, rows *sql.Rows) ([]*T, error) {
 	defer rows.Close()

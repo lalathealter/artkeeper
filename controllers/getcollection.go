@@ -15,7 +15,7 @@ var GetCollectionHandler = factorAPIHandler(
 )
 
 func readGetCollectionRequest(r *http.Request) (models.Message, error) {
-	return parseURLParams(r, models.GetCollectionRequest{})
+	return parseURLValues(r, models.GetCollectionRequest{})
 }
 
 func respondGetCollection(w http.ResponseWriter, dbr models.DBResult) {

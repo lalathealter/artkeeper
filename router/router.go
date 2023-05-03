@@ -20,18 +20,19 @@ func Use() *router {
 		w.Write([]byte("Hello world!"))
 	})
 
+	apiurlsone := appendPath(apiurls, "*") 
+	rt.setroute(apiurlsone, "POST", controllers.PostURLhandler)
+	rt.setroute(apiurlsone, "GET", controllers.GetURLHandler)
+	rt.setroute(apiurlsone, "DELETE", controllers.DeleteURLHandler)
 
-	rt.setroute(apiurls, "POST", controllers.PostURLhandler)
-	rt.setroute(apiurls, "GET", controllers.GetURLHandler)
-	rt.setroute(apiurls, "DELETE", controllers.DeleteURLHandler)
-
-	apiurlslatest := fmt.Sprintf("%v/%v", apiurls, "latest")
+	apiurlslatest := appendPath(apiurls, "latest") 
 	rt.setroute(apiurlslatest, "GET", controllers.GetLatestURLsHandler)
 
-	rt.setroute(apicollections, "GET", controllers.GetCollectionHandler)
-	rt.setroute(apicollections, "POST", controllers.PostCollectionHandler)
-	rt.setroute(apicollections, "PUT", controllers.PutInCollectionHandler)
-	rt.setroute(apicollections, "DELETE", controllers.DeleteCollectionHandler)
+	apicollectionsone := appendPath(apicollections, "*")
+	rt.setroute(apicollectionsone, "GET", controllers.GetCollectionHandler)
+	rt.setroute(apicollectionsone, "POST", controllers.PostCollectionHandler)
+	rt.setroute(apicollectionsone, "PUT", controllers.PutInCollectionHandler)
+	rt.setroute(apicollectionsone, "DELETE", controllers.DeleteCollectionHandler)
 	return rt
 }
 
@@ -81,4 +82,8 @@ type routeEntry struct {
 
 func (rentry *routeEntry) doesMatchMethod(r *http.Request) bool {
 	return r.Method == rentry.Method 
+}
+
+func appendPath(base, next string) string {
+	return fmt.Sprintf("%v/%v", base, next)
 }

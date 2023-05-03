@@ -8,7 +8,7 @@ import (
 
 
 type GetURLRequest struct {
-	ID     *ResourceID         `urlparam:"linkID"`
+	ID     *ResourceID         `urlparam:"0"`
 }
 func (gr GetURLRequest) VerifyValues() error {
 	return VerifyStruct(gr)
@@ -28,8 +28,8 @@ func (gr GetURLRequest) Call(db *sql.DB) (DBResult, error) {
 }
 
 type GetLatestURLsRequest struct {
-	Offset *StringifiedInt `urlparam:"offset"`
-	Limit  *StringifiedInt `urlparam:"limit"`
+	Offset *StringifiedInt `urlquery:"offset"`
+	Limit  *StringifiedInt `urlquery:"limit"`
 }
 
 func (grLatest GetLatestURLsRequest) VerifyValues() error {
@@ -163,7 +163,7 @@ func (putcr PutInCollectionRequest) Call(db *sql.DB) (DBResult, error) {
 }
 
 type GetCollectionRequest struct {
-	ID *ResourceID `urlparam:"collID"`
+	ID *ResourceID `urlparam:"0"`
 }
 
 func (gcr GetCollectionRequest) VerifyValues() error {

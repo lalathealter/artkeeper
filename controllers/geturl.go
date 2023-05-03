@@ -15,7 +15,7 @@ var GetURLHandler = factorAPIHandler(
 )
 
 func readGetURLRequest(r *http.Request) (models.Message, error) {
-	return parseURLParams(r, models.GetURLRequest{})
+	return parseURLValues(r, models.GetURLRequest{})
 }
 var GetLatestURLsHandler = factorAPIHandler(
 	readGetLatestURLsRequest,
@@ -23,7 +23,7 @@ var GetLatestURLsHandler = factorAPIHandler(
 )
 
 func readGetLatestURLsRequest(r *http.Request) (models.Message, error) {
-	return parseURLParams(r, models.GetLatestURLsRequest{})
+	return parseURLValues(r, models.GetLatestURLsRequest{})
 }
 func respondGetURL(w http.ResponseWriter, dbr models.DBResult) {
 	rows := dbr.(*sql.Rows)
