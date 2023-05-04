@@ -17,8 +17,6 @@ import (
 )
 
 type readmethod func(*http.Request) (models.Message, error)
-// type dbcaller func(models.Message) (dbresult, error)
-// type calldbmethod func(*sql.DB) dbcaller
 type respondmethod func(http.ResponseWriter, models.DBResult)
 
 func factorAPIHandler(
@@ -104,7 +102,7 @@ func parseURLValues[T models.Message](r *http.Request, target T) (T, error) {
 			value = urlPathTokens[len(urlPathTokens) - 1 - ind]
 		}
 
-		if !ok {
+		if !ok && value == "" {
 			continue // no suitable tag was found;
 		}
 
@@ -163,11 +161,30 @@ func ExtractFieldPointersIntoNamedMap[T any](in *T) (map[string]any, error) {
 	return fieldMap, nil
 }
 
-// func ExtractFieldValues[T any](in *T) []any {
-// 	iter := reflect.ValueOf(in).Elem()
-// 	fieldvals := make([]any, iter.NumField())
-// 	for i := 0; i < iter.NumField(); i++ {
-// 		fieldvals[i] = iter.Field(i).Interface()
-// 	}
-// 	return fieldvals
-// }
+
+func encodeJSONResponses[T any](w http.ResponseWriter, dbr models.DBResult, format T) {
+	rows := dbr.(*sql.Rows)
+	responsesArr, err := parseSQLRows(format, rows)
+
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	if len(responsesArr) == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	finalResp := formatForJSON(responsesArr)
+	if err = json.NewEncoder(w).Encode(finalResp); err != nil {
+		log.Panicln(err)
+	}
+}
+
+func formatForJSON[T any](respArr []*T) any {
+	if len(respArr) == 1 {
+		return *respArr[0]
+	}
+	return respArr
+}

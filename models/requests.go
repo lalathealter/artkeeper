@@ -231,3 +231,30 @@ func (dlcr DeleteURLFromCollectionRequest) Call (db *sql.DB) (DBResult, error) {
 	sqlargs := []any{  dlcr.LinkID, dlcr.CollID }
 	return db.Exec(sqlstatement, sqlargs...)
 }
+
+type GetURLsFromCollectionRequest struct {
+	ID *ResourceID `urlparam:"1"`
+}
+
+const selectURLsFromCollection = `
+	SELECT *
+	FROM ak_data.urls 
+	WHERE url_id IN (
+		SELECT unnest(url_ids_collection)
+		FROM ak_data.collections 
+		WHERE collection_id=$1
+	)
+	;
+`
+
+func (glcr GetURLsFromCollectionRequest) VerifyValues() (error) {
+	return VerifyStruct(glcr) 
+}
+
+func (glcr GetURLsFromCollectionRequest) Call (db *sql.DB) (DBResult, error) {
+	sqlstatement := selectURLsFromCollection 
+	sqlargs := []any{ glcr.ID }
+	return db.Query(sqlstatement, sqlargs...)
+}
+
+

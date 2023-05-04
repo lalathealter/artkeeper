@@ -13,3 +13,7 @@ type GetCollectionResponse struct {
 	Description string `field:"collection_description"`
 	UserID string `field:"owner_id"`
 }
+
+type GetURLsFromCollectionResponse struct {
+	LinkIDs string `field:"url_ids_collection"`
+}

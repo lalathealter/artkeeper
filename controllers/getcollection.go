@@ -1,9 +1,6 @@
 package controllers
 
 import (
-	"database/sql"
-	"encoding/json"
-	"log"
 	"net/http"
 
 	"github.com/lalathealter/artkeeper/models"
@@ -19,22 +16,19 @@ func readGetCollectionRequest(r *http.Request) (models.Message, error) {
 }
 
 func respondGetCollection(w http.ResponseWriter, dbr models.DBResult) {
-	rows := dbr.(*sql.Rows)
-	responses, err := parseSQLRows(models.GetCollectionResponse{}, rows)
-
-	if err != nil {
-		log.Panicln(err)
-	}
-
-	if len(responses) == 0 {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	if err = json.NewEncoder(w).Encode(responses); err != nil {
-		log.Panicln(err)
-	}
+	encodeJSONResponses(w, dbr, models.GetCollectionResponse{})
 }
 
+var GetURLsFromCollectionHandler = factorAPIHandler(
+	readGetURLsFromCollectionRequest,
+	respondGetURLsFromCollection,
+)
+
+func readGetURLsFromCollectionRequest(r *http.Request) (models.Message, error) {
+	return parseURLValues(r, models.GetURLsFromCollectionRequest{})
+}
+
+func respondGetURLsFromCollection(w http.ResponseWriter, dbr models.DBResult) {
+	encodeJSONResponses(w, dbr, models.GetURLResponse{})
+}
 
