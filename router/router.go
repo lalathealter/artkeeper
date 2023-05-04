@@ -131,9 +131,7 @@ type routeEntry struct {
 	Handler http.HandlerFunc
 }
 
-func (rentry *routeEntry) doesMatchMethod(r *http.Request) bool {
-	return r.Method == rentry.Method 
-}
+
 
 func appendPath(base, next string) string {
 	if next[0] == '/' {
