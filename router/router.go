@@ -28,6 +28,10 @@ func Use() *router {
 	apiurlslatest := appendPath(apiurls, "latest") 
 	rt.setroute(apiurlslatest, "GET", controllers.GetLatestURLsHandler)
 
+	apicollectionshelp := apicollections
+	rt.setroute(apicollectionshelp, "GET", func(w http.ResponseWriter,  r *http.Request) {
+		w.Write([]byte("#documentation for interacting with collections"))
+	})
 	apicollectionsone := appendPath(apicollections, "*")
 	rt.setroute(apicollectionsone, "GET", controllers.GetCollectionHandler)
 	rt.setroute(apicollectionsone, "POST", controllers.PostCollectionHandler)
@@ -35,7 +39,6 @@ func Use() *router {
 	rt.setroute(apicollectionsone, "DELETE", controllers.DeleteCollectionHandler)
 	apicollectionsurlsone := appendPath(apicollectionsone, "urls/*")
 	rt.setroute(apicollectionsurlsone, "DELETE", controllers.DeleteURLFromCollection)
-	fmt.Println(*rt)
 	return rt
 }
 
@@ -43,11 +46,13 @@ type router map[int][]routeEntry
 
 func (rt *router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	matchedHandler := http.NotFound
-	reqPathTokens := parsePathTokens(r.URL.Path)
+	reqPathTokens := controllers.ParsePathTokens(r.URL.Path)
+	bestScore := 0
 	for _, rentry := range (*rt)[len(reqPathTokens)] {
 		if rentry.doesMatchMethod(r) {
 			score := rentry.doesMatchPath(reqPathTokens) 
-			if score { 
+			if score > bestScore { 
+				bestScore = score
 				matchedHandler = rentry.Handler.ServeHTTP
 			}
 		}
@@ -56,18 +61,24 @@ func (rt *router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	matchedHandler(w, r)
 }
 
-func (rentry *routeEntry) doesMatchPath(requestPathTokens []string) (bool) {
+func (rentry *routeEntry) doesMatchPath(requestPathTokens []string) (int) {
+	scr := 0 
+	fmt.Println(rentry.Path)
+	fmt.Println(requestPathTokens)
 	for i, val := range requestPathTokens {
 		currToken := rentry.Path[i]
 		if val != currToken && currToken != "*" {
-			return false 
+			return -1
+		}
+		if val == currToken {
+			scr++
 		}
 	}
-	return true
+	return scr 
 }
 
 func (rt *router) setroute(p string, m string, hf http.HandlerFunc) {
-	pathTokens := parsePathTokens(p) 
+	pathTokens := controllers.ParsePathTokens(p) 
 	rentry := routeEntry{
 		Path:    pathTokens,
 		Method:  strings.ToUpper(m),
@@ -86,11 +97,6 @@ type routeEntry struct {
 func (rentry *routeEntry) doesMatchMethod(r *http.Request) bool {
 	return r.Method == rentry.Method 
 }
-
-func parsePathTokens(path string) []string {
-	return strings.Split(path, "/")
-}
-
 
 func appendPath(base, next string) string {
 	if next[0] == '/' {

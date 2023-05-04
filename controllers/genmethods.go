@@ -66,8 +66,19 @@ func parseJSONMessage[T models.Message](r *http.Request, target T) (T, error) {
 	return target, nil
 }
 
+
+func ParsePathTokens(path string) []string {
+	tokens := strings.Split(path, "/")
+	lastInd := len(tokens) - 1
+	if tokens[lastInd] == "" {
+		tokens = tokens[:lastInd]
+	}
+	return tokens 
+}
+
+
 func parseURLValues[T models.Message](r *http.Request, target T) (T, error) {
-	urlPathTokens := strings.Split(r.URL.Path, "/")
+	urlPathTokens := ParsePathTokens(r.URL.Path) 
 	urlQueryVals, err := url.ParseQuery(r.URL.RawQuery)
 	if err != nil {
 		return *(new(T)), err
