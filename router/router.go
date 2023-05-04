@@ -42,29 +42,61 @@ func Use() *router {
 	return rt
 }
 
-type router map[int][]routeEntry
+type router map[int]routeEntriesMap
 
 func (rt *router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	matchedHandler := http.NotFound
+	matchedHandler := rt.matchHandlerFor(r)
+	matchedHandler(w, r)
+}
+
+func (rt *router) matchHandlerFor(r *http.Request) http.HandlerFunc {
 	reqPathTokens := controllers.ParsePathTokens(r.URL.Path)
-	bestScore := 0
-	for _, rentry := range (*rt)[len(reqPathTokens)] {
-		if rentry.doesMatchMethod(r) {
-			score := rentry.doesMatchPath(reqPathTokens) 
-			if score > bestScore { 
-				bestScore = score
-				matchedHandler = rentry.Handler.ServeHTTP
-			}
-		}
+	reqLen := len(reqPathTokens)
+	rens := (*rt)[reqLen] 
+	
+	matchedHandler := http.NotFound
+	if rens == nil {
+		return matchedHandler
 	}
 
-	matchedHandler(w, r)
+	bestScore := 0
+	routes, isMethodAllowed := rens[r.Method]
+	if !isMethodAllowed {
+		return rens.methodNotAllowedHandler
+	}
+	for _, rentry := range routes {
+		score := rentry.doesMatchPath(reqPathTokens)  
+		if score > bestScore { 
+			bestScore = score
+			matchedHandler = rentry.Handler.ServeHTTP
+		}
+	}
+	return matchedHandler
+}
+
+
+type routeEntriesMap map[string][]routeEntry 
+
+func (rens routeEntriesMap) methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
+	allowedMethods := rens.getAllowedMethods()  
+	allowedMethodsHeaderString := strings.Join(allowedMethods, ", ")
+	w.Header().Set("Allow", allowedMethodsHeaderString)
+	w.WriteHeader(http.StatusMethodNotAllowed)
+}
+
+
+func (rens routeEntriesMap) getAllowedMethods() []string {
+	methods := make([]string, len(rens))
+	i := 0
+	for m := range rens {
+		methods[i] = m
+		i++
+	}
+	return methods 
 }
 
 func (rentry *routeEntry) doesMatchPath(requestPathTokens []string) (int) {
 	scr := 0 
-	fmt.Println(rentry.Path)
-	fmt.Println(requestPathTokens)
 	for i, val := range requestPathTokens {
 		currToken := rentry.Path[i]
 		if val != currToken && currToken != "*" {
@@ -85,7 +117,12 @@ func (rt *router) setroute(p string, m string, hf http.HandlerFunc) {
 		Handler: hf,
 	}
 	l := len(pathTokens)
-	(*rt)[l] = append((*rt)[l], rentry)
+	md := rentry.Method
+
+	if _, ok := (*rt)[l]; !ok {
+		(*rt)[l] = make(routeEntriesMap)
+	} 
+	(*rt)[l][md] = append((*rt)[l][md], rentry)
 }
 
 type routeEntry struct {
