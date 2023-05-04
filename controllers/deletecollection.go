@@ -12,7 +12,7 @@ var DeleteCollectionHandler = factorAPIHandler(
 )
 
 func readDeleteCollectionRequest(r *http.Request) (models.Message, error) {
-	return parseJSONMessage(r, models.DeleteCollectionRequest{})
+	return parseURLValues(r, models.DeleteCollectionRequest{})
 }
 
 func respondDeleteCollection(w http.ResponseWriter, _ models.DBResult) {

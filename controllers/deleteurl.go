@@ -12,7 +12,7 @@ var DeleteURLHandler = factorAPIHandler(
 )
 
 func readDeleteURLRequest(r *http.Request) (models.Message, error) {
-	return parseJSONMessage(r, models.DeleteURLRequest{})
+	return parseURLValues(r, models.DeleteURLRequest{})
 }
 
 func respondDeleteURL(w http.ResponseWriter, _ models.DBResult) {

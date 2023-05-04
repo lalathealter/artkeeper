@@ -64,7 +64,7 @@ func (grLatest GetLatestURLsRequest) Call(db *sql.DB) (DBResult, error) {
 
 type DeleteURLRequest struct {
 	// UserID *UserID `json:"userID"`
-	LinkID *ResourceID `json:"linkID"`
+	LinkID *ResourceID `urlparam:"0"`
 }
 
 func (dr DeleteURLRequest) VerifyValues() error {
@@ -132,7 +132,7 @@ func (pcr PostCollectionRequest) Call(db *sql.DB) (DBResult, error) {
 
 type PutInCollectionRequest struct {
 	LinkID *ResourceID `json:"linkID"`
-	CollID *ResourceID `json:"collID"`
+	CollID *ResourceID `urlparam:"1"`
 }
 
 func (putcr PutInCollectionRequest) VerifyValues() error {
@@ -185,7 +185,7 @@ func (gcr GetCollectionRequest) Call(db *sql.DB) (DBResult, error) {
 }
 
 type DeleteCollectionRequest struct {
-	CollID *ResourceID `json:"collID"`
+	CollID *ResourceID `urlparam:"0"`
 }
 
 func (dcr DeleteCollectionRequest) VerifyValues() error {

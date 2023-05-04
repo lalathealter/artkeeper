@@ -35,8 +35,11 @@ func Use() *router {
 	apicollectionsone := appendPath(apicollections, "*")
 	rt.setroute(apicollectionsone, "GET", controllers.GetCollectionHandler)
 	rt.setroute(apicollectionsone, "POST", controllers.PostCollectionHandler)
-	rt.setroute(apicollectionsone, "PUT", controllers.PutInCollectionHandler)
 	rt.setroute(apicollectionsone, "DELETE", controllers.DeleteCollectionHandler)
+
+	apicollectionsurls := appendPath(apicollectionsone, "urls") 
+	rt.setroute(apicollectionsurls, "PUT", controllers.PutInCollectionHandler)
+
 	apicollectionsurlsone := appendPath(apicollectionsone, "urls/*")
 	rt.setroute(apicollectionsurlsone, "DELETE", controllers.DeleteURLFromCollection)
 	return rt

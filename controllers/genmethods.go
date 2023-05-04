@@ -77,6 +77,9 @@ func ParsePathTokens(path string) []string {
 }
 
 
+
+
+
 func parseURLValues[T models.Message](r *http.Request, target T) (T, error) {
 	urlPathTokens := ParsePathTokens(r.URL.Path) 
 	urlQueryVals, err := url.ParseQuery(r.URL.RawQuery)
@@ -87,7 +90,6 @@ func parseURLValues[T models.Message](r *http.Request, target T) (T, error) {
 	for i := 0; i < iterm.NumField(); i++ {
 		var value string 
 		tagger := iterm.Type().Field(i).Tag
-
 		queryKey, ok := tagger.Lookup("urlquery")
 		if ok {
 			value = urlQueryVals.Get(queryKey) // may be empty string
@@ -101,7 +103,11 @@ func parseURLValues[T models.Message](r *http.Request, target T) (T, error) {
 			}
 			value = urlPathTokens[len(urlPathTokens) - 1 - ind]
 		}
- 
+
+		if !ok {
+			continue // no suitable tag was found;
+		}
+
 		typedfield := iterm.Field(i).Interface()
 		reffedval, err := models.ReflectCastedStringlike(value, typedfield)
 		if err != nil {

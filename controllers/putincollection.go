@@ -12,7 +12,12 @@ var PutInCollectionHandler = factorAPIHandler(
 )
 
 func readPutInCollectionRequest(r *http.Request) (models.Message, error) {
-	return parseJSONMessage(r, models.PutInCollectionRequest{})
+	pcr := models.PutInCollectionRequest{}
+	pcr, err := parseJSONMessage(r, pcr)
+	if err != nil {
+		return nil, err
+	}
+	return parseURLValues(r, pcr)
 }
 
 
