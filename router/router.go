@@ -33,6 +33,9 @@ func Use() *router {
 	rt.setroute(apicollectionsone, "POST", controllers.PostCollectionHandler)
 	rt.setroute(apicollectionsone, "PUT", controllers.PutInCollectionHandler)
 	rt.setroute(apicollectionsone, "DELETE", controllers.DeleteCollectionHandler)
+	apicollectionsurlsone := appendPath(apicollectionsone, "urls/*")
+	rt.setroute(apicollectionsurlsone, "DELETE", controllers.DeleteURLFromCollection)
+	fmt.Println(*rt)
 	return rt
 }
 
@@ -40,7 +43,7 @@ type router map[int][]routeEntry
 
 func (rt *router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	matchedHandler := http.NotFound
-	reqPathTokens := strings.Split(r.URL.Path, "/") 
+	reqPathTokens := parsePathTokens(r.URL.Path)
 	for _, rentry := range (*rt)[len(reqPathTokens)] {
 		if rentry.doesMatchMethod(r) {
 			score := rentry.doesMatchPath(reqPathTokens) 
@@ -64,7 +67,7 @@ func (rentry *routeEntry) doesMatchPath(requestPathTokens []string) (bool) {
 }
 
 func (rt *router) setroute(p string, m string, hf http.HandlerFunc) {
-	pathTokens := strings.Split(p, "/")
+	pathTokens := parsePathTokens(p) 
 	rentry := routeEntry{
 		Path:    pathTokens,
 		Method:  strings.ToUpper(m),
@@ -84,6 +87,14 @@ func (rentry *routeEntry) doesMatchMethod(r *http.Request) bool {
 	return r.Method == rentry.Method 
 }
 
+func parsePathTokens(path string) []string {
+	return strings.Split(path, "/")
+}
+
+
 func appendPath(base, next string) string {
+	if next[0] == '/' {
+		return fmt.Sprintf("%v%v", base, next) 
+	}
 	return fmt.Sprintf("%v/%v", base, next)
 }

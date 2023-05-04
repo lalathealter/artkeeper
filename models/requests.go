@@ -204,4 +204,30 @@ func (dcr DeleteCollectionRequest) Call(db *sql.DB) (DBResult, error) {
 	return db.Exec(sqlstatement, sqlargs...)
 }
 
+type DeleteURLFromCollectionRequest struct {
+	CollID *ResourceID `urlparam:"2"`
+	LinkID *ResourceID `urlparam:"0"`
+}
 
+func (dlcr DeleteURLFromCollectionRequest) VerifyValues() error {
+	return VerifyStruct(dlcr)
+}
+
+const deleteURLFromCollection = `
+		UPDATE ak_data.collections
+		SET url_ids_collection = (
+			SELECT ARRAY (
+				SELECT unnest(url_ids_collection) 
+				EXCEPT SELECT $1
+			)
+		)
+		WHERE collection_id=$2
+		;
+	`
+	
+
+func (dlcr DeleteURLFromCollectionRequest) Call (db *sql.DB) (DBResult, error) {
+	sqlstatement := deleteURLFromCollection
+	sqlargs := []any{  dlcr.LinkID, dlcr.CollID }
+	return db.Exec(sqlstatement, sqlargs...)
+}
