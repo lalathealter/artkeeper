@@ -162,29 +162,9 @@ func ExtractFieldPointersIntoNamedMap[T any](in *T) (map[string]any, error) {
 }
 
 
-func encodeJSONResponses[T any](w http.ResponseWriter, dbr models.DBResult, format T) {
-	rows := dbr.(*sql.Rows)
-	responsesArr, err := parseSQLRows(format, rows)
-
-	if err != nil {
-		log.Panicln(err)
-	}
-
-	if len(responsesArr) == 0 {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
+func sendEncodedJSON(w http.ResponseWriter, data any) {
 	w.Header().Set("Content-Type", "application/json")
-	finalResp := formatForJSON(responsesArr)
-	if err = json.NewEncoder(w).Encode(finalResp); err != nil {
+	if err := json.NewEncoder(w).Encode(data); err != nil {
 		log.Panicln(err)
 	}
-}
-
-func formatForJSON[T any](respArr []*T) any {
-	if len(respArr) == 1 {
-		return *respArr[0]
-	}
-	return respArr
 }
