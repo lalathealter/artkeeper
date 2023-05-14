@@ -150,16 +150,32 @@ const updateLinksInCollection = `
 			)
 		)
 		WHERE collection_id=$2
+		RETURNING collection_id
 		;
 	`
-	
+
+const checkIfLinkExists = `
+	SELECT EXISTS(
+		SELECT 1 
+		FROM ak_data.urls
+		WHERE url_id=$1
+	)
+	;
+`
+
 func (putcr PutInCollectionRequest) Call(db *sql.DB) (DBResult, error) {
+	doesLinkExist := false
+	err := db.QueryRow(checkIfLinkExists, putcr.LinkID).Scan(&doesLinkExist)
+	if !doesLinkExist {
+		return nil, err
+	}
+
 	sqlstatement := updateLinksInCollection
 	sqlargs := []any{
 		putcr.LinkID,
 		putcr.CollID,
 	}
-	return db.Query(sqlstatement, sqlargs...)
+	return db.Exec(sqlstatement, sqlargs...)
 }
 
 type GetCollectionRequest struct {
