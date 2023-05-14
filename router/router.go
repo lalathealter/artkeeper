@@ -20,6 +20,8 @@ func Use() *router {
 		w.Write([]byte("Hello world!"))
 	})
 
+	apiurlshelp := apiurls 
+	rt.setroute(apiurlshelp, "GET", controllers.HelpURLHandler)
 	apiurlsone := appendPath(apiurls, "*") 
 	rt.setroute(apiurlsone, "POST", controllers.PostURLhandler)
 	rt.setroute(apiurlsone, "GET", controllers.GetURLHandler)
@@ -29,9 +31,7 @@ func Use() *router {
 	rt.setroute(apiurlslatest, "GET", controllers.GetLatestURLsHandler)
 
 	apicollectionshelp := apicollections
-	rt.setroute(apicollectionshelp, "GET", func(w http.ResponseWriter,  r *http.Request) {
-		w.Write([]byte("#documentation for interacting with collections"))
-	})
+	rt.setroute(apicollectionshelp, "GET", controllers.HelpCollectionHandler)
 	apicollectionsone := appendPath(apicollections, "*")
 	rt.setroute(apicollectionsone, "GET", controllers.GetCollectionHandler)
 	rt.setroute(apicollectionsone, "POST", controllers.PostCollectionHandler)
@@ -136,9 +136,14 @@ type routeEntry struct {
 
 
 
-func appendPath(base, next string) string {
-	if next[0] == '/' {
-		return fmt.Sprintf("%v%v", base, next) 
+func appendPath(base string, nextOnes ...string) string {
+	result := base
+	for _, next := range nextOnes {
+		if next[0] == '/' {
+			result = fmt.Sprintf("%v%v", result, next) 
+		} else {
+			result = fmt.Sprintf("%v/%v", result, next)
+		}
 	}
-	return fmt.Sprintf("%v/%v", base, next)
+	return result
 }
