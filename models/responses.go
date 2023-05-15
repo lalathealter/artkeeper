@@ -10,6 +10,7 @@ type URLResponse struct {
 type CollectionResponse struct {
 	ID string `field:"collection_id"`
 	LinkIDs string `field:"url_ids_collection"`
+	Tags string `field:"collection_tags"`
 	Description string `field:"collection_description"`
 	UserID string `field:"owner_id"`
 }
