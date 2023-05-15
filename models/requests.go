@@ -303,3 +303,31 @@ func (attag AttachTagToCollectionRequest) Call(db *sql.DB) (DBResult, error) {
 	return db.Exec(sqlstatement, sqlargs...)
 }
 
+type DetachTagFromCollectionRequest struct {
+	TagName *Tag `urlparam:"0"`
+	CollID *ResourceID `urlparam:"2"`
+}
+
+func (detag DetachTagFromCollectionRequest) VerifyValues() error {
+	return VerifyStruct(detag)
+}
+
+const deleteTagFromCollection = `
+		UPDATE ak_data.collections
+		SET collection_tags = (
+			SELECT ARRAY (
+				SELECT unnest(collection_tags) 
+				EXCEPT SELECT $1
+			)
+		)
+		WHERE collection_id=$2
+		RETURNING collection_id
+		;
+	`
+
+
+func (detag DetachTagFromCollectionRequest) Call(db *sql.DB) (DBResult, error) {
+	sqlstatement := deleteTagFromCollection
+	sqlargs := []any{ detag.TagName, detag.CollID }
+	return db.Exec(sqlstatement, sqlargs...)
+}

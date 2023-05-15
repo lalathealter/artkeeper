@@ -46,6 +46,7 @@ func Use() *router {
 
 	apicollectionstags := appendPath(apicollectionsone, "tags/*")
 	rt.setroute(apicollectionstags, "PUT", controllers.AttachTagToCollectionHandler)
+	rt.setroute(apicollectionstags, "DELETE", controllers.DetachTagFromCollectionHandler)
 	return rt
 }
 
