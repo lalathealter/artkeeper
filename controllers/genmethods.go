@@ -132,9 +132,15 @@ func parseSQLRows[T any](responseFormat T, rows *sql.Rows) ([]*T, error) {
 			return nil, err
 		}
 
-		orderedPointersArr := make([]any, len(fieldMap))
+		orderedPointersArr := make([]any, len(sqlColumns))
 		for i, column := range sqlColumns {
-			orderedPointersArr[i] = fieldMap[column]
+			colval, formatHasColumn := fieldMap[column]
+			if !formatHasColumn {
+				var nilPtr *any = nil
+				orderedPointersArr[i] = &nilPtr
+				continue
+			}
+			orderedPointersArr[i] = colval
 		}
 		err = rows.Scan(orderedPointersArr...)
 		if err != nil {
