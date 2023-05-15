@@ -53,6 +53,7 @@ func respondGetURLsFromCollection(w http.ResponseWriter, dbr models.DBResult) {
 
 	if len(responsesArr) == 0 {
 		w.WriteHeader(http.StatusNotFound)
+		return 
 	}
 
 	sendEncodedJSON(w, responsesArr)
