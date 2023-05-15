@@ -54,6 +54,7 @@ func presetTables(db *sql.DB) {
 				collection_id SERIAL PRIMARY KEY NOT NULL,
 				url_ids_collection INT [],
 				collection_description TEXT,
+				collection_tags VARCHAR(64) [],
 				owner_id SERIAL NOT NULL,
 				CONSTRAINT owner_id
 					FOREIGN KEY(owner_id)

@@ -267,10 +267,39 @@ func (glcr GetURLsFromCollectionRequest) VerifyValues() (error) {
 	return VerifyStruct(glcr) 
 }
 
-func (glcr GetURLsFromCollectionRequest) Call (db *sql.DB) (DBResult, error) {
+func (glcr GetURLsFromCollectionRequest) Call(db *sql.DB) (DBResult, error) {
 	sqlstatement := selectURLsFromCollection 
 	sqlargs := []any{ glcr.ID }
 	return db.Query(sqlstatement, sqlargs...)
 }
 
+type AttachTagToCollectionRequest struct {
+	TagName *Tag `urlparam:"0"`  
+	CollID *ResourceID `urlparam:"2"`
+}
+
+func (attag AttachTagToCollectionRequest) VerifyValues() (error) {
+	return VerifyStruct(attag)
+}
+
+const updateTagsInCollection = `
+		UPDATE ak_data.collections
+		SET collection_tags = (
+			SELECT ARRAY (
+				SELECT DISTINCT * 
+				FROM unnest(
+					array_append(collection_tags, $1)
+				)
+			)
+		)
+		WHERE collection_id=$2
+		RETURNING collection_id
+		;
+`
+
+func (attag AttachTagToCollectionRequest) Call(db *sql.DB) (DBResult, error) {
+	sqlstatement := updateTagsInCollection
+	sqlargs := []any{ attag.TagName, attag.CollID }
+	return db.Exec(sqlstatement, sqlargs...)
+}
 

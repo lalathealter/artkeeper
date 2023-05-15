@@ -94,6 +94,24 @@ func (d Description) String() string {
 	return string(d)
 }
 
+type Tag string 
+
+const MAX_TAG_LEN = 64
+func (t Tag) ValidateSelf() error {
+	if len(t) > MAX_TAG_LEN {
+		return fmt.Errorf("tag name is too long")
+	}
+	return nil
+}
+
+func (t *Tag) CleanSelf() {
+	CleanStringlike(t)
+}
+
+func (t Tag) String() string {
+	return string(t)
+}
+
 type UserID string
 
 func (uid UserID) ValidateSelf() error {

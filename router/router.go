@@ -30,11 +30,12 @@ func Use() *router {
 	apiurlslatest := appendPath(apiurls, "latest") 
 	rt.setroute(apiurlslatest, "GET", controllers.GetLatestURLsHandler)
 
+	rt.setroute(apicollections, "POST", controllers.PostCollectionHandler)
 	apicollectionshelp := apicollections
 	rt.setroute(apicollectionshelp, "GET", controllers.HelpCollectionHandler)
+
 	apicollectionsone := appendPath(apicollections, "*")
 	rt.setroute(apicollectionsone, "GET", controllers.GetCollectionHandler)
-	rt.setroute(apicollectionsone, "POST", controllers.PostCollectionHandler)
 	rt.setroute(apicollectionsone, "DELETE", controllers.DeleteCollectionHandler)
 
 	apicollectionsurls := appendPath(apicollectionsone, "urls") 
@@ -42,6 +43,9 @@ func Use() *router {
 	rt.setroute(apicollectionsurls, "GET", controllers.GetURLsFromCollectionHandler)
 	apicollectionsurlsone := appendPath(apicollectionsone, "urls/*")
 	rt.setroute(apicollectionsurlsone, "DELETE", controllers.DeleteURLFromCollection)
+
+	apicollectionstags := appendPath(apicollectionsone, "tags/*")
+	rt.setroute(apicollectionstags, "PUT", controllers.AttachTagToCollectionHandler)
 	return rt
 }
 
