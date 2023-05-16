@@ -88,13 +88,13 @@ func parseURLValues[T models.Message](r *http.Request, target T) (T, error) {
 	for i := 0; i < iterm.NumField(); i++ {
 		var value string 
 		tagger := iterm.Type().Field(i).Tag
-		queryKey, ok := tagger.Lookup("urlquery")
-		if ok {
+		queryKey, hasQueryTag := tagger.Lookup("urlquery")
+		if hasQueryTag {
 			value = urlQueryVals.Get(queryKey) // may be empty string
 		} 
 
-		paramIndexStr, ok := tagger.Lookup("urlparam")
-		if ok {
+		paramIndexStr, hasParamTag := tagger.Lookup("urlparam")
+		if hasParamTag {
 			ind, err := strconv.Atoi(paramIndexStr)
 			if err != nil {
 				return *(new(T)), fmt.Errorf("failed to parse a url parameter because of incorrect tagging in type declaration of %T (param index is can't be int);", target)
@@ -102,7 +102,7 @@ func parseURLValues[T models.Message](r *http.Request, target T) (T, error) {
 			value = urlPathTokens[len(urlPathTokens) - 1 - ind]
 		}
 
-		if !ok && value == "" {
+		if !hasQueryTag && !hasParamTag {
 			continue // no suitable tag was found;
 		}
 
