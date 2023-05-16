@@ -1,10 +1,14 @@
 package models
 
 import (
+	"encoding/hex"
 	"fmt"
+	"log"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type StringifiedInt string
@@ -125,4 +129,46 @@ func (uid *UserID) CleanSelf() {
 
 func (uid UserID) String() string {
 	return string(uid)
+}
+
+type Username string 
+
+const MAX_NAME_LEN = 36
+func (un Username) ValidateSelf() error {
+	if len(un) > MAX_NAME_LEN {
+		return fmt.Errorf("username is too long")
+	}
+	return nil
+}
+
+func (un *Username) CleanSelf() {
+	CleanStringlike(un)
+}
+
+func (un Username) String() string {
+	return string(un)
+}
+
+
+type Password string 
+
+const MIN_PASS_LEN = 8
+func (pass Password) ValidateSelf() error {
+	if len(pass)< MIN_PASS_LEN {
+		return fmt.Errorf("password is too short")
+	}
+	return nil
+}
+
+func (pass *Password) CleanSelf() {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*pass), bcrypt.DefaultCost)
+	if err != nil {
+		log.Panicln(err)
+	}
+	nextPass := Password(hex.EncodeToString(hashedPassword))
+	*pass = nextPass
+}
+
+func (pass Password) String() string {
+	return string(pass)
 }

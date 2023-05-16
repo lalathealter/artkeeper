@@ -13,7 +13,8 @@ type Stringlike interface {
 	string |
 		InputLink | Description |
 		ResourceID | UserID |
-		StringifiedInt | Tag
+		StringifiedInt | Tag |
+		Username
 	String() string
 }
 

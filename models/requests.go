@@ -339,3 +339,29 @@ func (detag DetachTagFromCollectionRequest) Call(db *sql.DB) (DBResult, error) {
 	sqlargs := []any{ detag.TagName, detag.CollID }
 	return db.Exec(sqlstatement, sqlargs...)
 }
+
+type RegistrateUserRequest struct {
+	Username *Username `json:"username"`
+	Password *Password `json:"password"`
+}
+
+func (reg RegistrateUserRequest) VerifyValues() error {
+	return VerifyStruct(reg)
+}
+
+const insertOneUser = `
+	INSERT INTO ak_data.users(user_name, password_hash)
+	VALUES($1, $2)
+	ON CONFLICT (user_name)
+	DO NOTHING
+	;
+`
+
+func (reg RegistrateUserRequest) Call(db *sql.DB) (DBResult, error) {
+	sqlstatement := insertOneUser
+	sqlargs := []any{ 
+		reg.Username, 
+		reg.Password,
+	}
+	return db.Exec(sqlstatement, sqlargs...)
+}

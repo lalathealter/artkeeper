@@ -11,6 +11,7 @@ import (
 const (
 	apiurls        = "/api/urls"
 	apicollections = "/api/collections"
+	apiusers = "/api/users"
 )
 
 func Use() *router {
@@ -47,6 +48,8 @@ func Use() *router {
 	apicollectionstags := appendPath(apicollectionsone, "tags/*")
 	rt.setroute(apicollectionstags, "PUT", controllers.AttachTagToCollectionHandler)
 	rt.setroute(apicollectionstags, "DELETE", controllers.DetachTagFromCollectionHandler)
+
+	rt.setroute(apiusers, "POST", controllers.UserRegistrationHandler)
 	return rt
 }
 

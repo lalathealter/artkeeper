@@ -44,8 +44,10 @@ func presetTables(db *sql.DB) {
 		`
 			CREATE TABLE IF NOT EXISTS ak_data.users (
 				user_name VARCHAR(36) NOT NULL,
+				password_hash CHAR(120) NOT NULL,
 				user_id SERIAL PRIMARY KEY NOT NULL,
-				registration_date TIMESTAMPTZ NOT NULL DEFAULT NOW() 
+				registration_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+				UNIQUE(user_name)
 			)
 			;
 		`,
