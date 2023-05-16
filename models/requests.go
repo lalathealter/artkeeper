@@ -117,7 +117,15 @@ func (pcr PostCollectionRequest) VerifyValues() error {
 
 const insertOneCollection = `
 		INSERT INTO ak_data.collections(url_ids_collection, owner_id, collection_description)
-		VALUES($1, $2, $3)
+		VALUES((
+			SELECT ARRAY (
+				SELECT url_id 
+				FROM ak_data.urls
+				WHERE url_id IN (
+					SELECT unnest($1::INT[])
+				)
+			)
+		), $2, $3)
 		;
 	`
 func (pcr PostCollectionRequest) Call(db *sql.DB) (DBResult, error) {
