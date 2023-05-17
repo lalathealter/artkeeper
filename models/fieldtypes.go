@@ -1,14 +1,10 @@
 package models
 
 import (
-	"encoding/hex"
 	"fmt"
-	"log"
 	"net/url"
 	"strconv"
 	"strings"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type StringifiedInt string
@@ -152,23 +148,32 @@ func (un Username) String() string {
 
 type Password string 
 
-const MIN_PASS_LEN = 8
 func (pass Password) ValidateSelf() error {
-	if len(pass)< MIN_PASS_LEN {
-		return fmt.Errorf("password is too short")
-	}
 	return nil
 }
 
-func (pass *Password) CleanSelf() {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(*pass), bcrypt.DefaultCost)
-	if err != nil {
-		log.Panicln(err)
-	}
-	nextPass := Password(hex.EncodeToString(hashedPassword))
-	*pass = nextPass
+func (pass *Password) CleanSelf() {}
+
+func (pass *Password) Update(updateMethod func(string)string) {
+	*pass = Password(updateMethod((*pass).String()))
 }
 
 func (pass Password) String() string {
 	return string(pass)
+}
+
+type Nonce string 
+
+const MIN_NONCE_LEN = 12
+func (nonce Nonce) ValidateSelf() error {
+	if len(nonce) < MIN_NONCE_LEN {
+		return fmt.Errorf("nonce is too short")
+	}
+	return nil
+}
+
+func (nonce *Nonce) CleanSelf() {}
+
+func (nonce Nonce) String() string {
+	return string(nonce)
 }

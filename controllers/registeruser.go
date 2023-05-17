@@ -2,9 +2,11 @@ package controllers
 
 import (
 	"database/sql"
+	"log"
 	"net/http"
 
 	"github.com/lalathealter/artkeeper/models"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var UserRegistrationHandler = factorAPIHandler(
@@ -13,9 +15,17 @@ var UserRegistrationHandler = factorAPIHandler(
 )
 
 func readUserRegistrationRequest(r *http.Request) (models.Message, error) {
-	msg, err := parseJSONMessage(r, models.RegistrateUserRequest{})
-
+	msg, err := parseJSONMessage(r, models.RegisterUserRequest{})
+	msg.Password.Update(bcryptString)
 	return msg, err 
+}
+
+func bcryptString(input string) string {
+	hash, err := bcrypt.GenerateFromPassword([]byte(input), bcrypt.DefaultCost)
+	if err != nil {
+		log.Panicln(err)
+	}
+	return string(hash)
 }
 
 func respondUserRegistrationRequest(w http.ResponseWriter, dbr models.DBResult) {
