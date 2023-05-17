@@ -340,12 +340,12 @@ func (detag DetachTagFromCollectionRequest) Call(db *sql.DB) (DBResult, error) {
 	return db.Exec(sqlstatement, sqlargs...)
 }
 
-type RegistrateUserRequest struct {
+type RegisterUserRequest struct {
 	Username *Username `json:"username"`
 	Password *Password `json:"password"`
 }
 
-func (reg RegistrateUserRequest) VerifyValues() error {
+func (reg RegisterUserRequest) VerifyValues() error {
 	return VerifyStruct(reg)
 }
 
@@ -357,7 +357,7 @@ const insertOneUser = `
 	;
 `
 
-func (reg RegistrateUserRequest) Call(db *sql.DB) (DBResult, error) {
+func (reg RegisterUserRequest) Call(db *sql.DB) (DBResult, error) {
 	sqlstatement := insertOneUser
 	sqlargs := []any{ 
 		reg.Username, 
@@ -365,3 +365,36 @@ func (reg RegistrateUserRequest) Call(db *sql.DB) (DBResult, error) {
 	}
 	return db.Exec(sqlstatement, sqlargs...)
 }
+
+type PostSessionRequest struct {
+	Username *Username `json:"username"`
+	Password *Password `json:"password"`
+	ClientNonce *Nonce `json:"cnonce"`
+	ServerNonce *Nonce `json:"snonce"`
+}
+
+type PostSessionDBResult struct {
+	PostSessionRequest
+	Row *sql.Row
+}
+
+func (psr PostSessionRequest) VerifyValues() error {
+	return VerifyStruct(psr)
+}
+
+const selectOnePassword = `
+	SELECT password_hash
+	FROM ak_data.users
+	WHERE user_name=$1
+	LIMIT 1
+	;
+`
+
+func (psr PostSessionRequest) Call(db *sql.DB) (DBResult, error) {
+	sqlstatement := selectOnePassword
+	sqlargs := []any{ psr.Username }
+	sqlRow := db.QueryRow(sqlstatement, sqlargs...)
+	return PostSessionDBResult{psr, sqlRow}, sqlRow.Err()
+}
+
+

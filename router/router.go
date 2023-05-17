@@ -12,6 +12,7 @@ const (
 	apiurls        = "/api/urls"
 	apicollections = "/api/collections"
 	apiusers = "/api/users"
+	apisession = "/api/session"
 )
 
 func Use() *router {
@@ -50,6 +51,8 @@ func Use() *router {
 	rt.setroute(apicollectionstags, "DELETE", controllers.DetachTagFromCollectionHandler)
 
 	rt.setroute(apiusers, "POST", controllers.UserRegistrationHandler)
+
+	rt.setroute(apisession, "POST", controllers.PostSessionHandler)
 	return rt
 }
 
