@@ -8,6 +8,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/lalathealter/artkeeper/config"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -63,8 +64,9 @@ func IssueJWT(name string) string {
 	return signedJWT
 }
 
+var jwtSignSecret = []byte(config.Getnonempty("JWTSECRET"))
 func signJWT(body string) string {
-	hasher := hmac.New(sha256.New, []byte("SECRET"))
+	hasher := hmac.New(sha256.New, jwtSignSecret)
 	hasher.Write([]byte(body))
 	signature := base64.RawURLEncoding.EncodeToString(hasher.Sum(nil))
 	return signature
