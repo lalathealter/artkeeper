@@ -87,18 +87,19 @@ func VerifyStruct[T Message](vstruct T) error {
 
 	for i := 0; i < reflect.ValueOf(vstruct).NumField(); i++ {
 		field := values.Field(i)
-
+		_, canBeOmitted := values.Type().Field(i).Tag.Lookup("optional")
+		
 		if field.Kind() == reflect.Slice || field.Kind() == reflect.Array {
 			for i := 0; i < field.Len(); i++ {
 				err := VerifyFieldValue(field.Index(i))
 				fmt.Println(field.Index(i), err)
-				if err != nil {
+				if err != nil && !canBeOmitted {
 					return err
 				}
 			}
 		} else {
 			err := VerifyFieldValue(field)
-			if err != nil {
+			if err != nil && !canBeOmitted {
 				return err
 			}
 		}
