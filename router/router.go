@@ -9,6 +9,8 @@ import (
 )
 
 const (
+	staticfilesdir = "static"
+	staticfiles = "/static/*"
 	apiurls        = "/api/urls"
 	apicollections = "/api/collections"
 	apiusers = "/api/users"
@@ -22,6 +24,11 @@ func Use() *router {
 		w.Write([]byte("Hello world!"))
 	})
 
+	rt.setroute(staticfiles, "GET", func(w http.ResponseWriter, r *http.Request) {
+		statFS := http.StripPrefix("/" + staticfilesdir, http.FileServer(http.Dir(staticfilesdir)))
+		statFS.ServeHTTP(w, r)
+	})
+	
 	apiurlshelp := apiurls 
 	rt.setroute(apiurlshelp, "GET", controllers.HelpURLHandler)
 	apiurlsone := appendPath(apiurls, "*") 
