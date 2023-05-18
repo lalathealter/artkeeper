@@ -366,6 +366,60 @@ func (reg RegisterUserRequest) Call(db *sql.DB) (DBResult, error) {
 	return db.Exec(sqlstatement, sqlargs...)
 }
 
+type UpdateUserRequest struct {
+	OldUsername *Username `jwt:"name"`
+	Username *Username `json:"username" optional:"true"`
+	Password *Password `json:"password" optional:"true"`
+}
+
+func (uur UpdateUserRequest) VerifyValues() error {
+	return VerifyStruct(uur)
+}
+
+const updateUserFull = `
+	UPDATE ak_data.users
+	SET user_name=$2,
+		password_hash=$3
+	WHERE user_name=$1 
+	;
+`
+
+const updateUserName = `
+	UPDATE ak_data.users
+	SET user_name=$2
+	WHERE user_name=$1
+	;
+`
+
+const updateUserPassword = `
+	UPDATE ak_data.users
+	SET password_hash=$2
+	WHERE user_name=$1
+	;
+`
+
+func (uur UpdateUserRequest) Call(db *sql.DB) (DBResult, error) {
+	var sqlstatement string
+	var sqlargs []any
+	hasName := uur.Username != nil
+	hasPass := uur.Password != nil
+	switch {
+	case hasPass && hasName:
+		sqlstatement = updateUserFull
+		sqlargs = []any{ uur.OldUsername, uur.Username, uur.Password}
+	case hasName:
+		sqlstatement = updateUserName
+		sqlargs = []any{ uur.OldUsername, uur.Username }
+	case hasPass: 
+		sqlstatement = updateUserPassword
+		sqlargs = []any{ uur.OldUsername, uur.Password }
+	default:
+		return nil, nil
+	}
+
+	return db.Exec(sqlstatement, sqlargs...)
+}
+
 type PostSessionRequest struct {
 	Username *Username `json:"username"`
 	Password *Password `json:"password"`

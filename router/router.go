@@ -50,7 +50,9 @@ func Use() *router {
 	rt.setroute(apicollectionstags, "PUT", controllers.AttachTagToCollectionHandler)
 	rt.setroute(apicollectionstags, "DELETE", controllers.DetachTagFromCollectionHandler)
 
-	rt.setroute(apiusers, "POST", controllers.UserRegistrationHandler)
+	apiusersnew := appendPath(apiusers, "new")
+	rt.setroute(apiusersnew, "POST", controllers.UserRegistrationHandler)
+	rt.setroute(apiusers, "POST", controllers.UpdateUserHandler)
 
 	rt.setroute(apisession, "POST", controllers.PostSessionHandler)
 	return rt

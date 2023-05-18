@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/lalathealter/artkeeper/controllers/auth"
@@ -21,10 +20,13 @@ func readPostSessionRequest(r *http.Request) (models.Message, error) {
 
 func respondPostSessionRequest(w http.ResponseWriter, dbr models.DBResult) {
 	psr := dbr.(models.PostSessionDBResult)
+
 	var foundHash models.Password
 	err := psr.Row.Scan(&foundHash)
 	if err != nil {
-		log.Panicln(err)
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Authentication failed: user doesn't exist"))  
+		return 
 	}
 
 	validHash := foundHash.String()
@@ -55,8 +57,7 @@ func bakeCookieWithJWT(jwt string) *http.Cookie {
 	return &http.Cookie{
 		Name: COOKIE_TOKEN_NAME,
 		Value: jwt, 
-		Secure: true,
-		MaxAge: auth.MAX_TOKEN_AGE,
-		HttpOnly: true,
+		Path: "/",
+		MaxAge: 10000000,
 	}
 }
