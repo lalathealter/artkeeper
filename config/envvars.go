@@ -44,6 +44,7 @@ func getenvmap() envmap {
 	neededvars := [...]string{
 		"HOST", "PORT",
 		"dbhost", "dbport", "dbuser", "dbpassword", "dbname",
+		"JWTSECRET",
 	}
 
 	m := envmap{}
