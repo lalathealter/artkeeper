@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/microcosm-cc/bluemonday"
@@ -22,8 +23,13 @@ var (
 )
 
 func Getnonempty(key string) string {
+	key = strings.TrimSpace(key)
+	if key == "" {
+		log.Panicln(fmt.Errorf("accessing an env variable by an empty key; Not allowed"))
+	}
+	key = strings.ToUpper(key)
 	v, ok := localmap[key]
-	if !ok || v == "" || key == "" {
+	if !ok || v == "" {
 		log.Panicln(fmt.Errorf("the env variable %v isn't declared or empty; Check the spelling and its presence in .env file", key))
 	}
 	return v
@@ -32,7 +38,7 @@ func Getnonempty(key string) string {
 func init() {
 	localmap = getenvmap()
 	localmap["ROOT"] = (getroot())
-	localmap["psqlconn"] = (getpsqlconn())
+	localmap["PSQLCONN"] = (getpsqlconn())
 }
 
 func getenvmap() envmap {
@@ -43,7 +49,7 @@ func getenvmap() envmap {
 
 	neededvars := [...]string{
 		"HOST", "PORT",
-		"dbhost", "dbport", "dbuser", "dbpassword", "dbname",
+		"DBHOST", "DBPORT", "DBUSER", "DBPASSWORD", "DBNAME",
 		"JWTSECRET",
 	}
 
@@ -66,6 +72,6 @@ func getroot() string {
 func getpsqlconn() string {
 	return fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		Getnonempty("dbhost"), Getnonempty("dbport"), Getnonempty("dbuser"), Getnonempty("dbpassword"), Getnonempty("dbname"),
+		Getnonempty("DBHOST"), Getnonempty("DBPORT"), Getnonempty("DBUSER"), Getnonempty("DBPASSWORD"), Getnonempty("DBNAME"),
 	)
 }
