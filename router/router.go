@@ -9,6 +9,14 @@ import (
 )
 
 const (
+	anySign = '*'
+	dynSign = '+'
+	anyMod = string(anySign)
+	dynMod = string(dynSign)
+	anyDynMod = anyMod + dynMod
+)
+
+const (
 	staticfilesdir = "static"
 	staticfiles = "/static/"
 	apiurls        = "/api/urls"
@@ -24,7 +32,7 @@ func Use() *router {
 		w.Write([]byte("Hello world!"))
 	})
 
-	staticfilesDynamicRoute := appendPath(staticfiles, "*+")
+	staticfilesDynamicRoute := appendPath(staticfiles, anyDynMod)
 	rt.setroute(staticfilesDynamicRoute, "GET", func(w http.ResponseWriter, r *http.Request) {
 		statFS := http.StripPrefix(staticfiles, http.FileServer(http.Dir(staticfilesdir)))
 		statFS.ServeHTTP(w, r)
@@ -32,7 +40,7 @@ func Use() *router {
 	
 	apiurlshelp := apiurls 
 	rt.setroute(apiurlshelp, "GET", controllers.HelpURLHandler)
-	apiurlsone := appendPath(apiurls, "*") 
+	apiurlsone := appendPath(apiurls, anyMod) 
 	rt.setroute(apiurlsone, "POST", controllers.PostURLhandler)
 	rt.setroute(apiurlsone, "GET", controllers.GetURLHandler)
 	rt.setroute(apiurlsone, "DELETE", controllers.DeleteURLHandler)
@@ -44,17 +52,17 @@ func Use() *router {
 	apicollectionshelp := apicollections
 	rt.setroute(apicollectionshelp, "GET", controllers.HelpCollectionHandler)
 
-	apicollectionsone := appendPath(apicollections, "*")
+	apicollectionsone := appendPath(apicollections, anyMod)
 	rt.setroute(apicollectionsone, "GET", controllers.GetCollectionHandler)
 	rt.setroute(apicollectionsone, "DELETE", controllers.DeleteCollectionHandler)
 
 	apicollectionsurls := appendPath(apicollectionsone, "urls") 
 	rt.setroute(apicollectionsurls, "PUT", controllers.PutInCollectionHandler)
 	rt.setroute(apicollectionsurls, "GET", controllers.GetURLsFromCollectionHandler)
-	apicollectionsurlsone := appendPath(apicollectionsone, "urls/*")
+	apicollectionsurlsone := appendPath(apicollectionsone, "urls", anyMod)
 	rt.setroute(apicollectionsurlsone, "DELETE", controllers.DeleteURLFromCollection)
 
-	apicollectionstags := appendPath(apicollectionsone, "tags/*")
+	apicollectionstags := appendPath(apicollectionsone, "tags", anyMod)
 	rt.setroute(apicollectionstags, "PUT", controllers.AttachTagToCollectionHandler)
 	rt.setroute(apicollectionstags, "DELETE", controllers.DetachTagFromCollectionHandler)
 
@@ -142,7 +150,7 @@ func (rentry *routeEntry) doesMatchPath(requestPathTokens []string) (int) {
 
 		var isParameter bool 
 		if (routeToken != "") {
-			isParameter = routeToken[0] == '*'
+			isParameter = routeToken[0] == anySign
 		} 
 
 		if reqToken != routeToken && !isParameter {
@@ -167,7 +175,7 @@ func (rt *router) setroute(p string, m string, hf http.HandlerFunc) {
 
 	lastToken := pathTokens[l - 1]
 	if lastToken != "" {
-		if lastToken[len(lastToken) - 1] == '+' {
+		if lastToken[len(lastToken) - 1] == dynSign {
 			rt.appendRentry(0, rentry)
 		}
 	}
