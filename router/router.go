@@ -189,6 +189,13 @@ type routeEntry struct {
 
 
 func appendPath(base string, nextOnes ...string) string {
+	if base != "" {
+		lastBaseInd := len(base) - 1
+		if base[lastBaseInd] == '/' {
+			base = base[:lastBaseInd]
+		}
+	}
+
 	result := base
 	for _, next := range nextOnes {
 		if next[0] == '/' {
