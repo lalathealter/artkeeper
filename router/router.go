@@ -19,6 +19,7 @@ const (
 const (
 	staticfilesdir = "static"
 	staticfiles = "/static/"
+	formhtml = "form.html"
 	apiurls        = "/api/urls"
 	apicollections = "/api/collections"
 	apiusers = "/api/users"
@@ -67,6 +68,10 @@ func Use() *router {
 	rt.setroute(apicollectionstags, "DELETE", controllers.DetachTagFromCollectionHandler)
 
 	apiusersnew := appendPath(apiusers, "new")
+	clientregisterform := appendPath(staticfiles, formhtml)
+	rt.setroute(apiusersnew, "GET", func(w http.ResponseWriter, r *http.Request ) {
+		http.Redirect(w, r, clientregisterform, http.StatusSeeOther)
+	})
 	rt.setroute(apiusersnew, "POST", controllers.UserRegistrationHandler)
 	rt.setroute(apiusers, "POST", controllers.UpdateUserHandler)
 
@@ -100,7 +105,7 @@ func (rt *router) matchHandlerFor(r *http.Request) http.HandlerFunc {
 		return matchedHandler
 	}
 
-	if !isMethodAllowed {
+	if !isMethodAllowed && !(method == "GET") {
 		return exactRentriesMap.methodNotAllowedHandler
 	}
 
