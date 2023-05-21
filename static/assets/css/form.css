@@ -1,3 +1,57 @@
 body {
-    background-color: red;    
+    font-size: 1.4em;
+    font-family: monospace;
+    margin: 0px;
+    padding: 0px;
+    color: #212529;
+    background-color: lightgray;
+}
+
+.centered-box {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 100vh;
+}
+
+.form-box {
+    width: 100%;
+    margin-bottom: 0.2em;
+}
+
+input, button, label, textarea {
+    font-size: 1.5em;
+    font-family: monospace;
+    margin-bottom: 1em;
+}
+
+input, textarea {
+    width: 50%;
+}
+
+input:invalid {
+    background-color: ivory;
+    border: none;
+    outline: 2px solid red;
+    border-radius: 5px;
+}
+
+
+
+.radioinput {
+    width: initial;
+}
+
+ul {
+    text-decoration: none;
+    list-style: none;
+    text-align: left;
+}
+
+li {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
 }

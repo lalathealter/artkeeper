@@ -7,9 +7,34 @@
         <link rel="stylesheet" href="/static/assets/css/form.css" type="text/css" media="screen" title="no title" charset="utf-8">
     </head>
     <body>
-        <h1>
-            Hello world!
-        </h1>
+        <div class="centered-box">
+            <h1>
+                User Registration Form
+            </h1>
+            <form 
+                id="registration-form"
+                accept-charset="utf-8">
+                <div class="form-box">
+                    <label for="input_username">Username:</label>
+                    <input 
+                        type="text" 
+                        name="username" 
+                        id="input_username"/>
+                </div> 
+
+                <div class="form-box">
+                    <label for="password_input">Password:</label>
+                    <input 
+                        type="text" 
+                        name="password" 
+                        id="input_password"/> 
+                </div>
+                <div class="form-box">
+                    <input type="submit" value="Submit" />
+                </div> 
+            </form>
+        </div>
+            
     </body>
     <script src="/static/assets/js/form.js" charset="utf-8"></script>
 </html>
