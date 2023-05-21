@@ -10,9 +10,17 @@ form.onsubmit = async function(e) {
     e.preventDefault()
 
     const formData = new FormData(form)
-    const formDataObject = {}
-    for (const elem of formData.entries()) {
-        formDataObject[elem[0]] = elem[1]
+
+    const username = formData.get("username")
+    const password = formData.get("password")
+    const hashBufPass = await hashData(password)
+    // TODO: instead of generating random key recieve it from server
+    const serverNonce = window.crypto.getRandomValues(new Uint8Array(16))
+    const encryptedPassword = await encryptData(hashBufPass, serverNonce)
+
+    const formDataObject = {
+        username: username,
+        password: encryptedPassword,
     }
     const jsonFormData = JSON.stringify(formDataObject) 
     await fetch(urlToPost, {
@@ -27,6 +35,41 @@ form.onsubmit = async function(e) {
     })
 
     window.location.reload()
+}
+
+async function hashData(str) {
+    const data = new TextEncoder().encode(str)
+    const hashBuf = await window.crypto.subtle.digest("SHA-256", data)
+    return hashBuf
+}
+
+async function encryptData(str, key) {
+    const algo = "AES-GCM"
+    const data = new TextEncoder().encode(str)
+    let iv = window.crypto.getRandomValues(new Uint8Array(12))
+
+    return window.crypto.subtle.importKey(
+        "raw", key, 
+        {name: algo}, false,
+        ["encrypt"],
+    ).then((keyObj) => {
+        return window.crypto.subtle.encrypt(
+            {
+                name: algo,
+                iv: iv,
+            }, 
+            keyObj, data
+        )
+    }).then(encodeBufferToBase64)
+
+
+}
+
+function encodeBufferToBase64(arrayBuf) {
+    let decoder = new TextDecoder()
+    let uriEncoded = encodeURIComponent(decoder.decode(arrayBuf))
+    let b64 = window.btoa(uriEncoded)
+    return b64
 }
 
 function getErrorMessage(status) {
