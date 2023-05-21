@@ -129,8 +129,12 @@ func (uid UserID) String() string {
 
 type Username string 
 
+const MIN_NAME_LEN = 4
 const MAX_NAME_LEN = 36
 func (un Username) ValidateSelf() error {
+	if len (un) < MIN_NAME_LEN {
+		return fmt.Errorf("username is too short")
+	}
 	if len(un) > MAX_NAME_LEN {
 		return fmt.Errorf("username is too long")
 	}
