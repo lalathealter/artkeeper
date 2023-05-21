@@ -152,7 +152,11 @@ func (un Username) String() string {
 
 type Password string 
 
+const MIN_PASS_LEN = 8
 func (pass Password) ValidateSelf() error {
+	if len(pass) < MIN_PASS_LEN {
+		return fmt.Errorf("password is too short")
+	} 
 	return nil
 }
 
