@@ -14,7 +14,7 @@ type Stringlike interface {
 		InputLink | Description |
 		ResourceID | UserID |
 		StringifiedInt | Tag |
-		Username | Nonce
+		Username | Nonce | Password
 	String() string
 }
 
