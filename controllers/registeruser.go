@@ -1,9 +1,14 @@
 package controllers
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"database/sql"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -18,10 +23,42 @@ var UserRegistrationHandler = factorAPIHandler(
 
 func readUserRegistrationRequest(r *http.Request) (models.Message, error) {
 	msg, err := parseJSONMessage(r, models.RegisterUserRequest{})
+	// TODO: replace with real key from server
+	secretkey := make([]byte, 16)
+	ciphblock, e := aes.NewCipher(secretkey)
+	if e != nil {
+		return nil, e
+	}
+
+	aesgcm, e := cipher.NewGCM(ciphblock)
+	if e != nil {
+		return nil, err
+	}
+
+	ciphtext := decodeHexedField(msg.Password)
+	// TODO: replace with real nonce from client
+	cnonce := make([]byte, 12)
+	fmt.Println("CIPHER:", ciphtext)
+	plainhash, e := aesgcm.Open(nil, cnonce, ciphtext, nil)
+	if e != nil {
+		return nil, e
+	}
+	fmt.Println("decrypted", plainhash)
+	
+	msg.Password.Update(func (_ string) string {
+		return hex.EncodeToString(plainhash)
+	})
 	msg.Password.Update(auth.BcryptString)
 	return msg, err 
 }
 
+func decodeHexedField[T models.Stringlike](hexedInput *T) []byte {
+	str, e := hex.DecodeString((*hexedInput).String())
+	if e != nil {
+		log.Panicln(e)
+	}
+	return str
+}
 
 
 func respondUserRegistration(w http.ResponseWriter, dbr models.DBResult) {

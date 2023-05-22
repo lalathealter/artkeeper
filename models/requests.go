@@ -343,6 +343,7 @@ func (detag DetachTagFromCollectionRequest) Call(db *sql.DB) (DBResult, error) {
 type RegisterUserRequest struct {
 	Username *Username `json:"username"`
 	Password *Password `json:"password"`
+	ClientNonce *Nonce `json:"cnonce"`
 }
 
 func (reg RegisterUserRequest) VerifyValues() error {
