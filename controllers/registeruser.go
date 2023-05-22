@@ -23,8 +23,11 @@ var UserRegistrationHandler = factorAPIHandler(
 
 func readUserRegistrationRequest(r *http.Request) (models.Message, error) {
 	msg, err := parseJSONMessage(r, models.RegisterUserRequest{})
-	// TODO: replace with real key from server
-	secretkey := make([]byte, 16)
+	secretkey, e := auth.GetServerNonce(r)
+	if e != nil {
+		return nil, e
+	}
+
 	ciphblock, e := aes.NewCipher(secretkey)
 	if e != nil {
 		return nil, e

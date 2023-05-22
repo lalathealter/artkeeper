@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/lalathealter/artkeeper/controllers"
+	"github.com/lalathealter/artkeeper/controllers/auth"
 )
 
 const (
@@ -72,6 +73,8 @@ func Use() *router {
 	rt.setroute(apiusersnew, "GET", func(w http.ResponseWriter, r *http.Request ) {
 		http.Redirect(w, r, clientregisterform, http.StatusSeeOther)
 	})
+	apiusersnewsnonce := appendPath(apiusersnew, "snonce")
+	rt.setroute(apiusersnewsnonce, "GET", auth.ServerNonceHandler)
 	rt.setroute(apiusersnew, "POST", controllers.UserRegistrationHandler)
 	rt.setroute(apiusers, "POST", controllers.UpdateUserHandler)
 
