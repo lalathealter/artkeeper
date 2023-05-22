@@ -63,7 +63,6 @@ const isSecureSequence = (function() {
     const controlGroup = [regexHasChars, regexHasDigits, regexHasNotOnlyDigits]
     return function(str) {
         return controlGroup.every(regex => {
-            console.log(regex, regex.test(str))
             return regex.test(str)
         })
     }
@@ -127,7 +126,7 @@ form.onsubmit = async function(e) {
         alert(txtStr)
     })
 
-    window.location.reload()
+    form.reset()
 }
 
 async function hashData(str) {
