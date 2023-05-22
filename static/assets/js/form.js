@@ -2,11 +2,45 @@ const nameInput = document.getElementById("input_username")
 const passInput = document.getElementById("input_password")
 const form = document.getElementById("registration-form")
 
+const MIN_NAME_LEN = 4
+const MAX_NAME_LEN = 36
+const errNameTooShort = "username must be at least 4 characters long"
+const errNameTooLong = "username must be at most 36 characters long"
+const errInvalidName = "username shouldn't start with a number"
+nameInput.onblur = function() {
+    let nameText = nameInput.value
+
+    if (nameText.length < MIN_NAME_LEN) {
+        nameInput.setCustomValidity(errNameTooShort)
+        return
+    }
+
+    if (nameText.length > MAX_NAME_LEN ) {
+        nameInput.setCustomValidity(errNameTooLong)
+        return
+    }
+
+    if (!isValidName(nameText)) {
+        nameInput.setCustomValidity(errInvalidName)
+        return
+    }
+
+    nameInput.setCustomValidity("")
+}
+
+const isValidName = function() {
+    let regexDoesnStartWithChar = /^\D/
+    const controlGroup = [regexDoesnStartWithChar]
+    return function(nameStr) {
+        return controlGroup.every(regex => regex.test(nameStr))
+    }
+}()
+
 const MIN_PASSWORD_LENGTH = 8
 const errPassTooShort = "password must be at least 8 characters long"
 const errPassNotSecure = "password isn't secure (must contain at least 1 digit and 1 char and 1 non-space)"
+
 passInput.onblur = function() {
-    passInput.value = passInput.value
     let passText = passInput.value
     
     if (passText.length < MIN_PASSWORD_LENGTH) {
