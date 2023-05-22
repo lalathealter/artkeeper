@@ -2,6 +2,39 @@ const nameInput = document.getElementById("input_username")
 const passInput = document.getElementById("input_password")
 const form = document.getElementById("registration-form")
 
+const MIN_PASSWORD_LENGTH = 8
+const errPassTooShort = "password must be at least 8 characters long"
+const errPassNotSecure = "password isn't secure (must contain at least 1 digit and 1 char and 1 non-space)"
+passInput.onblur = function() {
+    passInput.value = passInput.value
+    let passText = passInput.value
+    
+    if (passText.length < MIN_PASSWORD_LENGTH) {
+        passInput.setCustomValidity(errPassTooShort)
+        return 
+    }
+
+    if (!isSecureSequence(passText)) {
+        passInput.setCustomValidity(errPassNotSecure)
+        return
+    }
+
+    passInput.setCustomValidity("")
+}
+
+const isSecureSequence = (function() {
+    let regexHasDigits = /\d/
+    let regexHasChars = /\S/
+    let regexHasNotOnlyDigits = /\D/
+    const controlGroup = [regexHasChars, regexHasDigits, regexHasNotOnlyDigits]
+    return function(str) {
+        return controlGroup.every(regex => {
+            console.log(regex, regex.test(str))
+            return regex.test(str)
+        })
+    }
+})()
+
 const currHost = (window.location.href)
 const pathToPostAPI = "/api/users/new"
 const urlToPost = new URL(pathToPostAPI, currHost) 
