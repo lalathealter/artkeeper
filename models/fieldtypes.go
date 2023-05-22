@@ -138,6 +138,10 @@ func (un Username) ValidateSelf() error {
 	if len(un) > MAX_NAME_LEN {
 		return fmt.Errorf("username is too long")
 	}
+	fchar := un[0]
+	if fchar >= '0' && fchar <= '9' {
+		return fmt.Errorf("username can't start with a number")
+	}
 	return nil
 }
 
