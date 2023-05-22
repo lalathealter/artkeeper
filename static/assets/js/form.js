@@ -3,8 +3,14 @@ const passInput = document.getElementById("input_password")
 const form = document.getElementById("registration-form")
 
 const currHost = (window.location.href)
-const pathToAPI = "/api/users/new"
-const urlToPost = new URL(pathToAPI, currHost) 
+const pathToPostAPI = "/api/users/new"
+const urlToPost = new URL(pathToPostAPI, currHost) 
+
+const pathToGetSnonce = pathToPostAPI + "/snonce"
+const urlToSnonce = new URL(pathToGetSnonce, currHost)
+
+const headerAuthReqId = "Authentication-Request-ID"
+const headerAuthServerNonce = "Authentication-Server-Nonce"
 
 form.onsubmit = async function(e) {
     e.preventDefault()
@@ -13,10 +19,18 @@ form.onsubmit = async function(e) {
 
     const username = formData.get("username")
     const password = formData.get("password")
+
     const hashBufPass = await hashData(password)
-    // TODO: instead of generating random key recieve it from server
-    const serverSecretKey = new Uint8Array(16)
-    const [clientNonce, encryptedPassword] = await encryptData(hashBufPass, serverSecretKey)
+    const [reqid, serverNonceByteArr] = await fetch(urlToSnonce, {
+        method: "GET"
+    }).then(res => {
+        const requestid = res.headers.get(headerAuthReqId)
+        const snonceHex = res.headers.get(headerAuthServerNonce)
+        const snonceArr = decodeHexToByteArr(snonceHex)
+        return [requestid, snonceArr]
+    })
+        
+    const [clientNonce, encryptedPassword] = await encryptData(hashBufPass, serverNonceByteArr)
     
     const formDataObject = {
         username: username,
@@ -24,13 +38,14 @@ form.onsubmit = async function(e) {
         cnonce: clientNonce,
     }
     console.log("hash", encodeBufferToHex(hashBufPass))
-    console.log(new Uint8Array(hashBufPass), serverSecretKey)
+    console.log(new Uint8Array(hashBufPass), serverNonceByteArr)
     console.log(formDataObject)
     const jsonFormData = JSON.stringify(formDataObject) 
     await fetch(urlToPost, {
         method: "POST",
         headers: {
             'Content-Type': 'application/json',
+            [headerAuthReqId]: reqid,
         },
         body: jsonFormData,
     }).then((res) => {
@@ -78,6 +93,17 @@ async function encryptData(arrBuffer, secretKey) {
         ]
     })
 
+}
+
+function decodeHexToByteArr(hexStr) {
+    const destLen = ~~(hexStr.length / 2)
+    const destArr = new Uint8Array(destLen)
+    for (let i = 0; i < destLen; i++) {
+        let strI = i * 2
+        let currPair = hexStr[strI] + hexStr[strI+1]
+        destArr[i] = parseInt(currPair, 16)
+    }
+    return destArr
 }
 
 function encodeBufferToHex(arrayBuf) {
