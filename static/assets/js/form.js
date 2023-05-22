@@ -33,9 +33,16 @@ form.onsubmit = async function(e) {
             'Content-Type': 'application/json',
         },
         body: jsonFormData,
-    }).then(function(res) {
-        let msg = res.ok ? "registation: success" : getErrorMessage(res.status) 
-        alert(msg)
+    }).then((res) => {
+        if (res.status === 400) {
+            return res.text()
+        }
+        if (!res.ok) {
+            return getErrorMessage(res.status)
+        }
+        return "registation: success"
+    }).then(txtStr => {
+        alert(txtStr)
     })
 
     window.location.reload()
@@ -50,8 +57,7 @@ async function hashData(str) {
 async function encryptData(arrBuffer, secretKey) {
     const algo = "AES-GCM"
     const data = new Uint8Array(arrBuffer)
-    // let iv = window.crypto.getRandomValues(new Uint8Array(12))
-    const ivNonce = (new Uint8Array(12))
+    const ivNonce = window.crypto.getRandomValues(new Uint8Array(12))
 
     return window.crypto.subtle.importKey(
         "raw", secretKey, 
@@ -84,8 +90,6 @@ function encodeBufferToHex(arrayBuf) {
 
 function getErrorMessage(status) {
     switch (status) {
-        case 400:
-            return "error: malformed data input"
         case 409:
             return "error: username is already taken"
         default:

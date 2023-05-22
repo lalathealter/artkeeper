@@ -36,8 +36,7 @@ func readUserRegistrationRequest(r *http.Request) (models.Message, error) {
 	}
 
 	ciphtext := decodeHexedField(msg.Password)
-	// TODO: replace with real nonce from client
-	cnonce := make([]byte, 12)
+	cnonce := decodeHexedField(msg.ClientNonce)
 	fmt.Println("CIPHER:", ciphtext)
 	plainhash, e := aesgcm.Open(nil, cnonce, ciphtext, nil)
 	if e != nil {

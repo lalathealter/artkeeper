@@ -172,11 +172,7 @@ func (pass Password) String() string {
 
 type Nonce string 
 
-const MIN_NONCE_LEN = 12
 func (nonce Nonce) ValidateSelf() error {
-	if len(nonce) < MIN_NONCE_LEN {
-		return fmt.Errorf("nonce is too short")
-	}
 	return nil
 }
 
