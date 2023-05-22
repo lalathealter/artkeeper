@@ -15,13 +15,17 @@ form.onsubmit = async function(e) {
     const password = formData.get("password")
     const hashBufPass = await hashData(password)
     // TODO: instead of generating random key recieve it from server
-    const serverNonce = window.crypto.getRandomValues(new Uint8Array(16))
-    const encryptedPassword = await encryptData(hashBufPass, serverNonce)
-
+    const serverSecretKey = new Uint8Array(16)
+    const [clientNonce, encryptedPassword] = await encryptData(hashBufPass, serverSecretKey)
+    
     const formDataObject = {
         username: username,
         password: encryptedPassword,
+        cnonce: clientNonce,
     }
+    console.log("hash", encodeBufferToHex(hashBufPass))
+    console.log(new Uint8Array(hashBufPass), serverSecretKey)
+    console.log(formDataObject)
     const jsonFormData = JSON.stringify(formDataObject) 
     await fetch(urlToPost, {
         method: "POST",
@@ -43,33 +47,39 @@ async function hashData(str) {
     return hashBuf
 }
 
-async function encryptData(str, key) {
+async function encryptData(arrBuffer, secretKey) {
     const algo = "AES-GCM"
-    const data = new TextEncoder().encode(str)
-    let iv = window.crypto.getRandomValues(new Uint8Array(12))
+    const data = new Uint8Array(arrBuffer)
+    // let iv = window.crypto.getRandomValues(new Uint8Array(12))
+    const ivNonce = (new Uint8Array(12))
 
     return window.crypto.subtle.importKey(
-        "raw", key, 
+        "raw", secretKey, 
         {name: algo}, false,
         ["encrypt"],
     ).then((keyObj) => {
         return window.crypto.subtle.encrypt(
             {
                 name: algo,
-                iv: iv,
+                iv: ivNonce,
             }, 
             keyObj, data
         )
-    }).then(encodeBufferToBase64)
-
+    }).then((encryptedDataBuffer) => {
+        return [
+            encodeBufferToHex(ivNonce),
+            encodeBufferToHex(encryptedDataBuffer)
+        ]
+    })
 
 }
 
-function encodeBufferToBase64(arrayBuf) {
-    let decoder = new TextDecoder()
-    let uriEncoded = encodeURIComponent(decoder.decode(arrayBuf))
-    let b64 = window.btoa(uriEncoded)
-    return b64
+function encodeBufferToHex(arrayBuf) {
+    let arr = new Uint8Array(arrayBuf)
+    hexStr = arr.reduce((acc, el) => {
+        return acc + ("0" + el.toString(16)).slice(-2)
+    }, "")
+    return hexStr
 }
 
 function getErrorMessage(status) {
