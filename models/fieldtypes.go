@@ -170,6 +170,10 @@ func (pass *Password) Update(updateMethod func(string)string) {
 	*pass = Password(updateMethod((*pass).String()))
 }
 
+func (pass *Password) ReplaceWith(str string) {
+	*pass = Password(str)
+}
+
 func (pass Password) String() string {
 	return string(pass)
 }

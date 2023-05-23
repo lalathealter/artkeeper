@@ -1,16 +1,58 @@
 package auth
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"log"
+	"net/http"
 	"time"
 
 	"github.com/lalathealter/artkeeper/config"
+	"github.com/lalathealter/artkeeper/models"
 	"golang.org/x/crypto/bcrypt"
 )
+func DecryptPassword(r *http.Request, pass *models.Password, clientNonce *models.Nonce) (string, error) {
+	
+	secretkey, e := GetServerNonce(r)
+	if e != nil {
+		return "", e
+	}
+
+	ciphblock, e := aes.NewCipher(secretkey)
+	if e != nil {
+		return "", e
+	}
+
+	aesgcm, e := cipher.NewGCM(ciphblock)
+	if e != nil {
+		return "", e
+	}
+
+	ciphtext := decodeHexedField(pass)
+	cnonce := decodeHexedField(clientNonce)
+	fmt.Println("CIPHER:", ciphtext)
+	plainhash, e := aesgcm.Open(nil, cnonce, ciphtext, nil)
+	if e != nil {
+		return "", e
+	}
+	fmt.Println("decrypted", plainhash)
+
+	return hex.EncodeToString(plainhash), nil
+}
+
+func decodeHexedField[T models.Stringlike](hexedInput *T) []byte {
+	str, e := hex.DecodeString((*hexedInput).String())
+	if e != nil {
+		log.Panicln(e)
+	}
+	return str
+}
 
 func BcryptString(input string) string {
 	hash, err := bcrypt.GenerateFromPassword([]byte(input), bcrypt.DefaultCost)
