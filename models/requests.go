@@ -425,7 +425,6 @@ type PostSessionRequest struct {
 	Username *Username `json:"username"`
 	Password *Password `json:"password"`
 	ClientNonce *Nonce `json:"cnonce"`
-	ServerNonce *Nonce `json:"snonce"`
 }
 
 type PostSessionDBResult struct {

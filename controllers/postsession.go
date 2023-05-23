@@ -15,6 +15,14 @@ var PostSessionHandler = factorAPIHandler(
 
 func readPostSessionRequest(r *http.Request) (models.Message, error) {
 	msg, err := parseJSONMessage(r, models.PostSessionRequest{})
+	if err != nil {
+		return nil, err
+	}
+	passhash, err := auth.DecryptPassword(r, msg.Password, msg.ClientNonce)
+	if err != nil {
+		return nil, err
+	}
+	msg.Password.ReplaceWith(passhash)
 	return msg, err
 }
 
