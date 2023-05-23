@@ -1,6 +1,67 @@
 const nameInput = document.getElementById("input_username")
 const passInput = document.getElementById("input_password")
-const form = document.getElementById("registration-form")
+const form = document.getElementById("main_form")
+const modeChanger = document.getElementById("mode_changer")
+const formHeading = document.getElementById("form_heading")
+
+
+const currHost = (window.location.href)
+const pathToUsers = "/api/users/new"
+const urlToPostUser = new URL(pathToUsers, currHost) 
+
+const pathToSessions = "/api/session"
+const urlToPostSession = new URL(pathToSessions, currHost)
+
+const pathToGetSnonce = pathToSessions + "/snonce"
+const urlToSnonce = new URL(pathToGetSnonce, currHost)
+
+const modesEnum = [
+    { mode: "login", url: urlToPostSession }, 
+    { mode: "registration", url: urlToPostUser}
+]
+let formMode = modesEnum[0].mode
+
+let urlToPost = urlToPostUser
+
+const cycleLoginModes = (function() {
+    let i = 0
+    const searchParams = new URLSearchParams(window.location.search)
+    for (i; i < modesEnum.length; i++) {
+        setFormMode(modesEnum[i])
+        modeName = modesEnum[i].mode
+        if (searchParams.has(modeName)) {
+            break
+        }
+    }
+    i++
+    return (function* () {
+        while (true) {
+            for (i; i < modesEnum.length; i++) {
+                setFormMode(modesEnum[i])
+                yield
+            }
+            i = 0
+        }
+    })()
+})()
+modeChanger.onclick = () => { cycleLoginModes.next() }
+
+function setFormMode(modeObj) {
+    let mName = modeObj.mode
+    formMode = mName
+
+    setPostURL(modeObj.url)
+    setHeadingString(mName)
+}
+
+function setPostURL(url) {
+    urlToPost = url
+}
+
+function setHeadingString(mode) {
+    formHeading.textContent = `user ${mode} form`
+}
+
 
 const MIN_NAME_LEN = 4
 const MAX_NAME_LEN = 36
@@ -68,13 +129,6 @@ const isSecureSequence = (function() {
     }
 })()
 
-const currHost = (window.location.href)
-const pathToPostAPI = "/api/users/new"
-const urlToPost = new URL(pathToPostAPI, currHost) 
-
-const pathToGetSnonce = pathToPostAPI + "/snonce"
-const urlToSnonce = new URL(pathToGetSnonce, currHost)
-
 const headerAuthReqId = "Authentication-Request-ID"
 const headerAuthServerNonce = "Authentication-Server-Nonce"
 
@@ -121,7 +175,7 @@ form.onsubmit = async function(e) {
         if (!res.ok) {
             return getErrorMessage(res.status)
         }
-        return "registation: success"
+        return "operation: success"
     }).then(txtStr => {
         alert(txtStr)
     })
@@ -183,7 +237,7 @@ function encodeBufferToHex(arrayBuf) {
 function getErrorMessage(status) {
     switch (status) {
         case 409:
-            return "error: username is already taken"
+            return "error: authentication conflict"
         default:
             return "error; couldn't register"
     }
