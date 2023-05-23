@@ -93,8 +93,16 @@ func (rt *router) matchHandlerFor(r *http.Request) http.HandlerFunc {
 	reqPathTokens := controllers.ParsePathTokens(r.URL.Path)
 	reqLen := len(reqPathTokens)
 	method := r.Method
-	exactRentriesMap := (*rt)[reqLen] 
+	exactRentriesMap, routeDefined := (*rt)[reqLen] 
 	var matchedHandler http.HandlerFunc 
+
+	if !routeDefined {
+		return http.NotFound
+	}
+
+	if method == http.MethodOptions {
+		return exactRentriesMap.optionsHandler
+	}
 
 	exactRoutes, isMethodAllowed := exactRentriesMap[method]
 	matchedHandler = findBestHandler(reqPathTokens, exactRoutes)
@@ -108,7 +116,7 @@ func (rt *router) matchHandlerFor(r *http.Request) http.HandlerFunc {
 		return matchedHandler
 	}
 
-	if !isMethodAllowed && !(method == "GET") {
+	if !isMethodAllowed && !(method == http.MethodGet) {
 		return exactRentriesMap.methodNotAllowedHandler
 	}
 
@@ -132,22 +140,27 @@ func findBestHandler(reqPathTokens []string, routes []*routeEntry) http.HandlerF
 
 type routeEntriesMap map[string][]*routeEntry 
 
+func (rens routeEntriesMap) optionsHandler(w http.ResponseWriter, r *http.Request) {
+	allowedMethodsHeaderString := rens.getAllowedMethodsStr()  
+	w.Header().Set("Allow", allowedMethodsHeaderString)
+	w.WriteHeader(http.StatusOK)
+}
+
 func (rens routeEntriesMap) methodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
-	allowedMethods := rens.getAllowedMethods()  
-	allowedMethodsHeaderString := strings.Join(allowedMethods, ", ")
+	allowedMethodsHeaderString := rens.getAllowedMethodsStr()  
 	w.Header().Set("Allow", allowedMethodsHeaderString)
 	w.WriteHeader(http.StatusMethodNotAllowed)
 }
 
 
-func (rens routeEntriesMap) getAllowedMethods() []string {
+func (rens routeEntriesMap) getAllowedMethodsStr() string {
 	methods := make([]string, len(rens))
 	i := 0
 	for m := range rens {
 		methods[i] = m
 		i++
 	}
-	return methods 
+	return strings.Join(methods, ", ")
 }
 
 func (rentry *routeEntry) doesMatchPath(requestPathTokens []string) (int) {
