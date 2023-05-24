@@ -51,7 +51,7 @@ func respondPostSessionRequest(w http.ResponseWriter, dbr models.DBResult) {
 	}
 
 	jwtoken := auth.IssueJWT(psr.Username.String()) 
-	jwtCookie := bakeCookieWithJWT(jwtoken)
+	jwtCookie := auth.BakeCookieWithJWT(jwtoken)
 
 	http.SetCookie(w, jwtCookie)
 	w.WriteHeader(http.StatusOK)
@@ -59,13 +59,3 @@ func respondPostSessionRequest(w http.ResponseWriter, dbr models.DBResult) {
 }
 
 
-const COOKIE_TOKEN_NAME = "token"
-func bakeCookieWithJWT(jwt string) *http.Cookie {
-	
-	return &http.Cookie{
-		Name: COOKIE_TOKEN_NAME,
-		Value: jwt, 
-		Path: "/",
-		MaxAge: 10000000,
-	}
-}

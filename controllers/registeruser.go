@@ -2,10 +2,7 @@ package controllers
 
 import (
 	"database/sql"
-	"encoding/base64"
-	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/lalathealter/artkeeper/controllers/auth"
 	"github.com/lalathealter/artkeeper/models"
@@ -55,7 +52,11 @@ func readUpdateUserRequest(r *http.Request) (models.Message, error) {
 		return nil, err
 	}
 	
-	jwt, err := parseJWT(r) 
+	jwtStr, err := auth.ParseJWTCookie(r)
+	if err != nil {
+		return nil, err
+	}
+	jwt, err := auth.ParseLoadFromJWT(jwtStr)
 	if err != nil {
 		return nil, err
 	}
@@ -67,18 +68,6 @@ func readUpdateUserRequest(r *http.Request) (models.Message, error) {
 	return msg, err
 }
 
-func parseJWT(r *http.Request) (auth.PayloadJWT, error) {
-	jwtObj := auth.PayloadJWT{}
-	
-	jwtCookie, err := r.Cookie(COOKIE_TOKEN_NAME)
-	if err != nil {
-		return jwtObj, err
-	}
-	hexPayload := strings.Split(jwtCookie.Value, ".")[1]
-	payload, err := base64.RawURLEncoding.DecodeString(hexPayload)
-	err = json.Unmarshal(payload, &jwtObj)
-	return jwtObj, err 
-}
 
 
 func respondUpdateUser(w http.ResponseWriter, dbr models.DBResult) {
