@@ -9,7 +9,7 @@ const currHost = (window.location.href)
 const pathToUsers = "/api/users/new"
 const urlToPostUser = new URL(pathToUsers, currHost) 
 
-const pathToSessions = "/api/session"
+const pathToSessions = "/api/session/new"
 const urlToPostSession = new URL(pathToSessions, currHost)
 
 const pathToGetSnonce = pathToSessions + "/snonce"

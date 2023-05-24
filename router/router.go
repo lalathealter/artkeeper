@@ -69,19 +69,19 @@ func Use() *router {
 	apiusersnew := appendPath(apiusers, "new")
 	clientregisterform := appendPath(staticfiles, formregisterhtml)
 	rt.setroute(apiusersnew, "GET", bindRedirectHanlder(clientregisterform))
-
 	rt.setroute(apiusersnew, "POST", controllers.UserRegistrationHandler)
 	rt.setroute(apiusers, "POST", controllers.UpdateUserHandler)
 
-	rt.setroute(apisession, "POST", controllers.PostSessionHandler)
-
 	apisessionnew := appendPath(apisession, "new")
+	rt.setroute(apisessionnew, "POST", controllers.PostSessionHandler)
 	clientloginform := appendPath(staticfiles, formloginhtml)
 	rt.setroute(apisessionnew, "GET", bindRedirectHanlder(clientloginform))
 
 	apisnonce := appendPath(apisession, "snonce")
 	rt.setroute(apisnonce, "GET", auth.ServerNonceHandler)
 
+	setroutesafe(apiusersnew)
+	setroutesafe(apisessionnew)
 	return rt
 }
 
@@ -91,11 +91,46 @@ func bindRedirectHanlder(pathToRedir string) http.HandlerFunc {
 	}
 }
 
+func authenticationFailedHandler(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusUnauthorized)
+	w.Write([]byte("please authenticate"))
+}
+
+var safeMethods = map[string]bool{
+	http.MethodHead: true,
+	http.MethodGet: true,
+	http.MethodOptions: true,
+}
+
+var safeRoutes = map[string]bool{}
+func setroutesafe(routeStr string) {
+	safeRoutes[routeStr] = true
+}
+
+func isUnsafeRequest(r *http.Request) bool {
+	_, isSafeMethod := safeMethods[r.Method]
+	if isSafeMethod {
+		return false
+	}
+	_, isSafeRoute := safeRoutes[r.URL.Path]
+	if isSafeRoute {
+		return false
+	}
+
+	return true
+}
+
+
 type router map[int]routeEntriesMap
 
 func (rt *router) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("JWT VALIDATION ERROR: ", auth.ValidateJWT(r))
 	matchedHandler := rt.matchHandlerFor(r)
+	if isUnsafeRequest(r) {
+		err := auth.ValidateJWT(r)
+		if err != nil {
+			matchedHandler = authenticationFailedHandler
+		}
+	}
 	matchedHandler(w, r)
 }
 
