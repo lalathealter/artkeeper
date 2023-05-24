@@ -19,7 +19,7 @@ const (
 
 const (
 	staticfilesdir = "static"
-	staticfiles = "/static/"
+	staticfiles = "/"
 	formhtml = "form.html"
 	apiurls        = "/api/urls"
 	apicollections = "/api/collections"
@@ -29,10 +29,6 @@ const (
 
 func Use() *router {
 	rt := &router{	}
-
-	rt.setroute("/", "GET", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello world!"))
-	})
 
 	staticfilesDynamicRoute := appendPath(staticfiles, anyDynMod)
 	rt.setroute(staticfilesDynamicRoute, "GET", func(w http.ResponseWriter, r *http.Request) {
