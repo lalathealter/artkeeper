@@ -21,6 +21,8 @@ const (
 	staticfilesdir = "static"
 	staticfiles = "/"
 	formhtml = "form.html"
+	formloginhtml = formhtml + "?login"
+	formregisterhtml = formhtml + "?register"
 	apiurls        = "/api/urls"
 	apicollections = "/api/collections"
 	apiusers = "/api/users"
@@ -65,19 +67,28 @@ func Use() *router {
 	rt.setroute(apicollectionstags, "DELETE", controllers.DetachTagFromCollectionHandler)
 
 	apiusersnew := appendPath(apiusers, "new")
-	clientregisterform := appendPath(staticfiles, formhtml)
-	rt.setroute(apiusersnew, "GET", func(w http.ResponseWriter, r *http.Request ) {
-		http.Redirect(w, r, clientregisterform, http.StatusSeeOther)
-	})
+	clientregisterform := appendPath(staticfiles, formregisterhtml)
+	rt.setroute(apiusersnew, "GET", bindRedirectHanlder(clientregisterform))
 
 	rt.setroute(apiusersnew, "POST", controllers.UserRegistrationHandler)
 	rt.setroute(apiusers, "POST", controllers.UpdateUserHandler)
 
 	rt.setroute(apisession, "POST", controllers.PostSessionHandler)
+
+	apisessionnew := appendPath(apisession, "new")
+	clientloginform := appendPath(staticfiles, formloginhtml)
+	rt.setroute(apisessionnew, "GET", bindRedirectHanlder(clientloginform))
+
 	apisnonce := appendPath(apisession, "snonce")
 	rt.setroute(apisnonce, "GET", auth.ServerNonceHandler)
 
 	return rt
+}
+
+func bindRedirectHanlder(pathToRedir string) http.HandlerFunc {
+	return func (w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, pathToRedir, http.StatusSeeOther)
+	}
 }
 
 type router map[int]routeEntriesMap
