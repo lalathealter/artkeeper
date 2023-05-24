@@ -29,55 +29,62 @@ const (
 	apisession = "/api/session"
 )
 
+var (
+	staticfilesDynamicRoute = appendPath(staticfiles, anyDynMod)
+
+	apiurlshelp = apiurls 
+	apiurlsone = appendPath(apiurls, anyMod) 
+	apiurlslatest = appendPath(apiurls, "latest") 
+
+	apicollectionshelp = apicollections
+	apicollectionsone = appendPath(apicollections, anyMod)
+	apicollectionsurls = appendPath(apicollectionsone, "urls") 
+	apicollectionstags = appendPath(apicollectionsone, "tags", anyMod)
+	apicollectionsurlsone = appendPath(apicollectionsone, "urls", anyMod)
+
+	clientregisterform = appendPath(staticfiles, formregisterhtml)
+	clientloginform = appendPath(staticfiles, formloginhtml)
+
+	apiusersnew = appendPath(apiusers, "new")
+	apisessionnew = appendPath(apisession, "new")
+	apisnonce = appendPath(apisession, "snonce")
+)
+
 func Use() *router {
 	rt := &router{	}
 
-	staticfilesDynamicRoute := appendPath(staticfiles, anyDynMod)
 	rt.setroute(staticfilesDynamicRoute, "GET", func(w http.ResponseWriter, r *http.Request) {
 		statFS := http.StripPrefix(staticfiles, http.FileServer(http.Dir(staticfilesdir)))
 		statFS.ServeHTTP(w, r)
 	})
 	
-	apiurlshelp := apiurls 
 	rt.setroute(apiurlshelp, "GET", controllers.HelpURLHandler)
-	apiurlsone := appendPath(apiurls, anyMod) 
 	rt.setroute(apiurlsone, "POST", controllers.PostURLhandler)
 	rt.setroute(apiurlsone, "GET", controllers.GetURLHandler)
 	rt.setroute(apiurlsone, "DELETE", controllers.DeleteURLHandler)
 
-	apiurlslatest := appendPath(apiurls, "latest") 
 	rt.setroute(apiurlslatest, "GET", controllers.GetLatestURLsHandler)
 
 	rt.setroute(apicollections, "POST", controllers.PostCollectionHandler)
-	apicollectionshelp := apicollections
 	rt.setroute(apicollectionshelp, "GET", controllers.HelpCollectionHandler)
 
-	apicollectionsone := appendPath(apicollections, anyMod)
 	rt.setroute(apicollectionsone, "GET", controllers.GetCollectionHandler)
 	rt.setroute(apicollectionsone, "DELETE", controllers.DeleteCollectionHandler)
 
-	apicollectionsurls := appendPath(apicollectionsone, "urls") 
 	rt.setroute(apicollectionsurls, "PUT", controllers.PutInCollectionHandler)
 	rt.setroute(apicollectionsurls, "GET", controllers.GetURLsFromCollectionHandler)
-	apicollectionsurlsone := appendPath(apicollectionsone, "urls", anyMod)
 	rt.setroute(apicollectionsurlsone, "DELETE", controllers.DeleteURLFromCollection)
 
-	apicollectionstags := appendPath(apicollectionsone, "tags", anyMod)
 	rt.setroute(apicollectionstags, "PUT", controllers.AttachTagToCollectionHandler)
 	rt.setroute(apicollectionstags, "DELETE", controllers.DetachTagFromCollectionHandler)
 
-	apiusersnew := appendPath(apiusers, "new")
-	clientregisterform := appendPath(staticfiles, formregisterhtml)
 	rt.setroute(apiusersnew, "GET", bindRedirectHanlder(clientregisterform))
 	rt.setroute(apiusersnew, "POST", controllers.UserRegistrationHandler)
 	rt.setroute(apiusers, "POST", controllers.UpdateUserHandler)
 
-	apisessionnew := appendPath(apisession, "new")
 	rt.setroute(apisessionnew, "POST", controllers.PostSessionHandler)
-	clientloginform := appendPath(staticfiles, formloginhtml)
 	rt.setroute(apisessionnew, "GET", bindRedirectHanlder(clientloginform))
 
-	apisnonce := appendPath(apisession, "snonce")
 	rt.setroute(apisnonce, "GET", auth.ServerNonceHandler)
 
 	setroutesafe(apiusersnew)
