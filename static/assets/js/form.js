@@ -175,12 +175,13 @@ form.onsubmit = async function(e) {
         if (!res.ok) {
             return getErrorMessage(res.status)
         }
+
+        setTimeout(()=>{form.reset()}, 0)
         return "operation: success"
     }).then(txtStr => {
         alert(txtStr)
     })
 
-    form.reset()
 }
 
 async function hashData(str) {
@@ -236,9 +237,11 @@ function encodeBufferToHex(arrayBuf) {
 
 function getErrorMessage(status) {
     switch (status) {
+        case 404:
+            return "error: provided username isn't registered"
         case 409:
-            return "error: authentication conflict"
+            return "error: provided username already exists"
         default:
-            return "error; couldn't register"
+            return "unknown error; couldn't register"
     }
 }
